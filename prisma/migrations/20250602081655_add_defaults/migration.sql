@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `LiveSession` MODIFY `status` ENUM('LIVE', 'COMPLETED', 'FAILED') NULL DEFAULT 'LIVE';
+
+-- AlterTable
+ALTER TABLE `Recording` MODIFY `video_url` VARCHAR(191) NULL,
+    MODIFY `status` ENUM('RECORDING', 'COMPLETED', 'FAILED') NULL DEFAULT 'RECORDING';
