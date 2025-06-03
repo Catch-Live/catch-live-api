@@ -6,16 +6,17 @@ import { FieldConstraintErrorMap } from './interfaces/recording/dto/field-error-
 import { getErrorMessage } from './support/error-message.util';
 import { RequestErrorCode } from './interfaces/common/errors/request-error-code';
 import { RequestCustomException } from './interfaces/common/errors/request-custom-exception';
+import { API_PREFIX } from './support/constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // api path에 prefix 설정
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
     new ValidationPipe({
       // POJO 객체를 DTO 클래스로 자동 변환
       transform: true,
-      // Request Paarms 검증할 떄 에러메시지 직접 핸들링
+      // Request Params 검증할 떄 에러메시지 직접 핸들링
       exceptionFactory: (errors) => {
         const firstError = errors[0];
         const field = firstError.property;

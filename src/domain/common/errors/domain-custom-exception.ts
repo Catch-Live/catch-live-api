@@ -2,7 +2,7 @@ import { HttpException } from '@nestjs/common';
 import { DomainErrorCode } from './domain-error-code';
 import { getErrorMessage } from 'src/support/error-message.util';
 
-export class DomainCustomExceptionn extends HttpException {
+export class DomainCustomException extends HttpException {
   code: any;
   constructor(
     public readonly statusCode: number,

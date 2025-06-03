@@ -2,7 +2,7 @@ import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/co
 import { Response } from 'express';
 import { ResultResponseDto } from '../dto/result.response.dto';
 import { RequestCustomException } from '../errors/request-custom-exception';
-import { DomainCustomExceptionn } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -20,7 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
 
-    if (exception instanceof DomainCustomExceptionn) {
+    if (exception instanceof DomainCustomException) {
       errorMessage = exception.message;
     }
 
