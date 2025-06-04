@@ -19,7 +19,7 @@ export class SubscriptionCoreRepository implements SubscriptionRepository {
       subscriptionId: Number(subscription.subscription_id),
       userId: Number(subscription.user_id),
       streamerId: Number(subscription.streamer_id),
-      isConnected: subscription.is_connected,
+      isConnected: subscription.is_connected ?? false,
       createdAt: subscription.created_at,
       updatedAt: subscription.updated_at,
     });
