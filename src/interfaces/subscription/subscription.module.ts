@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { SubscriptionsController } from './subscription.controller';
+import { SubscriptionController } from './subscription.controller';
 import { SubscriptionUseCase } from 'src/application/subscription/subscription.use-case';
 import { SubscriptionService } from 'src/domain/subscription/subscription.service';
 import { SUBSCRIPTION_REPOSITORY } from 'src/domain/subscription/subscription.repository';
 import { SubscriptionCoreRepository } from 'src/infrastructure/subscription/subscription.core-repository';
 
 @Module({
-  controllers: [SubscriptionsController],
+  controllers: [SubscriptionController],
   providers: [
     SubscriptionUseCase,
     SubscriptionService,

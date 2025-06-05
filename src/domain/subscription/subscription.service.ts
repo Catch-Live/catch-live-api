@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SUBSCRIPTION_REPOSITORY, SubscriptionRepository } from './subscription.repository';
-import { SubscriptionEntity } from './subscription.entity';
+import { SubscriptionWithChannelResult } from './result/subscription-with-channel.result';
 
 @Injectable()
 export class SubscriptionService {
@@ -9,7 +9,7 @@ export class SubscriptionService {
     private readonly subscriptionRepository: SubscriptionRepository
   ) {}
 
-  async getSubscriptions(): Promise<SubscriptionEntity[]> {
+  async getSubscriptions(): Promise<SubscriptionWithChannelResult[]> {
     return await this.subscriptionRepository.getSubscriptions();
   }
 }

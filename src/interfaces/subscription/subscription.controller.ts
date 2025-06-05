@@ -1,13 +1,18 @@
 import { Controller, Get } from '@nestjs/common';
 import { SubscriptionUseCase } from 'src/application/subscription/subscription.use-case';
-import { SubscriptionEntity } from 'src/domain/subscription/subscription.entity';
+import { ResultResponseDto } from '../common/dto/result.response.dto';
+import { GetSubscriptionsResponseDto } from './dto/subscription.response.dto';
 
-@Controller('/api/v1/subscriptions')
-export class SubscriptionsController {
+@Controller('subscriptions')
+export class SubscriptionController {
   constructor(private readonly subscriptionUseCase: SubscriptionUseCase) {}
 
   @Get()
-  getSubscriptions(): Promise<SubscriptionEntity[]> {
-    return this.subscriptionUseCase.getSubscriptions();
+  async getSubscriptions(): Promise<ResultResponseDto<GetSubscriptionsResponseDto>> {
+    const subscriptions = await this.subscriptionUseCase.getSubscriptions();
+
+    const responseDto = GetSubscriptionsResponseDto.of(subscriptions);
+
+    return ResultResponseDto.success(responseDto);
   }
 }
