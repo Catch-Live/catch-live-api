@@ -1,7 +1,8 @@
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { GetRecordingsCommand } from 'src/domain/recording/command/recording.command';
 import { RecordingStatus } from 'src/domain/recording/recording.entity';
+import { Platform } from 'src/domain/subscription/streamer.entity';
 
 export class GetRecordingsRequestDto {
   @IsOptional()
@@ -9,18 +10,24 @@ export class GetRecordingsRequestDto {
   q?: string;
 
   @IsOptional()
-  @IsIn(['RECORDING', 'COMPLETED', 'FAILED'])
-  filter?: RecordingStatus;
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value) as string[])
+  @IsIn([...Object.values(RecordingStatus)], { each: true })
+  recordingStatuses?: RecordingStatus[];
+
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value) as string[])
+  @IsIn([...Object.values(Platform)], { each: true })
+  platforms?: Platform[];
 
   @IsOptional()
   @IsString()
   @IsIn(['started_at', 'title'])
-  sortBy: 'started_at' | 'title' = 'started_at';
+  sortBy?: 'started_at' | 'title' = 'started_at';
 
   @IsOptional()
   @Type(() => Number)
   @IsIn([0, 1])
-  order: 0 | 1 = 0;
+  order?: 0 | 1 = 0;
 
   @IsOptional()
   @IsString()
@@ -35,7 +42,8 @@ export class GetRecordingsRequestDto {
   toCommand(): GetRecordingsCommand {
     return new GetRecordingsCommand(
       this.q,
-      this.filter,
+      this.recordingStatuses,
+      this.platforms,
       this.sortBy,
       this.order,
       this.cursor,

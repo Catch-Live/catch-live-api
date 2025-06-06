@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { Platform } from 'src/domain/recording/live-session.entity';
+import { Platform } from 'src/domain/subscription/streamer.entity';
 
 const prisma = new PrismaClient();
 
