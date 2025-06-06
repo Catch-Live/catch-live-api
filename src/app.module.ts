@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { RecordingModule } from './interfaces/recording/recording.module';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
-import { SubscriptionModule } from './interfaces/subscription/subscription.module';
+import { NotificationModule } from './interfaces/notification/notification.module';
 
 @Module({
-  imports: [RecordingModule, SubscriptionModule, PrismaModule],
+  imports: [RecordingModule, PrismaModule, NotificationModule],
 })
 export class AppModule {}
