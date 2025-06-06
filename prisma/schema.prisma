@@ -1,6 +1,7 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["views"]
+  provider                 = "prisma-client-js"
+  previewFeatures          = ["views"]
+  mapUnderscoreToCamelCase = "true"
 }
 
 datasource db {
@@ -20,6 +21,8 @@ model User {
   subscriptions Subscription[]
   tokens        Token[]
   notifications Notification[]
+
+  @@map("user")
 }
 
 model Streamer {
@@ -31,6 +34,8 @@ model Streamer {
   updated_at    DateTime       @updatedAt
   subscriptions Subscription[]
   live_sessions LiveSession[]
+
+  @@map("streamer")
 }
 
 model Subscription {
@@ -44,6 +49,7 @@ model Subscription {
   streamer        Streamer @relation(fields: [streamer_id], references: [streamer_id])
 
   @@index([streamer_id])
+  @@map("subscription")
 }
 
 model Token {
@@ -53,6 +59,8 @@ model Token {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
   user          User     @relation(fields: [user_id], references: [user_id])
+
+  @@map("token")
 }
 
 model LiveSession {
@@ -70,6 +78,7 @@ model LiveSession {
 
   @@index([title])
   @@index([started_at])
+  @@map("live_session")
 }
 
 model Recording {
@@ -82,6 +91,7 @@ model Recording {
   live_session    LiveSession      @relation(fields: [live_session_id], references: [live_session_id])
 
   @@index([live_session_id])
+  @@map("recording")
 }
 
 model Notification {
@@ -90,6 +100,8 @@ model Notification {
   content         String
   created_at      DateTime @default(now())
   user            User     @relation(fields: [user_id], references: [user_id])
+
+  @@map("notification")
 }
 
 view VSubscribedSession {
