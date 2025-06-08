@@ -7,8 +7,10 @@ export class SignoutController {
   constructor(private readonly signoutUseCase: SignoutUseCase) {}
 
   @Delete('me')
-  deleteUser() {
-    const entity = this.signoutUseCase.signoutUser();
-    return new SignoutResponseDto(entity.code, entity.message);
+  async deleteUser() {
+    const entity = await this.signoutUseCase.signoutUser();
+    if (entity) {
+      return new SignoutResponseDto('200', 'OK');
+    }
   }
 }
