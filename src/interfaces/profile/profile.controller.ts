@@ -9,8 +9,6 @@ export class ProfileController {
   @Get('me')
   async getProfile() {
     const entity = await this.profileUseCase.getProfile();
-    if (entity) {
-      return new ProfileResponseDto('200', 'OK', entity.createdAt, entity.provider, entity.email);
-    }
+    return new ProfileResponseDto('200', 'OK', entity.createdAt, entity.provider, entity.email);
   }
 }

@@ -6,6 +6,9 @@ export class ProfileCoreRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findFirst() {
-    return this.prisma.user.findFirst();
+    const query = {
+      where: { is_deleted: false },
+    };
+    return this.prisma.user.findFirst(query);
   }
 }

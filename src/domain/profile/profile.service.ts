@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ProfileCoreRepository } from 'src/infrastructure/profile/profile.core-repository';
 import { ProfileResponseEntity } from 'src/domain/profile/entity/profile.response.entity';
 
@@ -11,6 +11,8 @@ export class ProfileService {
 
     if (data !== null) {
       return new ProfileResponseEntity(data.created_at, data.provider, data.email);
+    } else {
+      throw new InternalServerErrorException('서버에서 요청을 처리할 수 없습니다.');
     }
   }
 }
