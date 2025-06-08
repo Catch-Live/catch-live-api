@@ -7,8 +7,10 @@ export class ProfileController {
   constructor(private readonly profileUseCase: ProfileUseCase) {}
 
   @Get('me')
-  getProfile() {
-    const entity = this.profileUseCase.getProfile();
-    return new ProfileResponseDto('200', 'OK', entity.provider, entity.email, entity.createdAt);
+  async getProfile() {
+    const entity = await this.profileUseCase.getProfile();
+    if (entity) {
+      return new ProfileResponseDto('200', 'OK', entity.createdAt, entity.provider, entity.email);
+    }
   }
 }

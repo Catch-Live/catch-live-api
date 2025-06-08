@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ProfileService } from 'src/domain/profile/profile.service';
 
 @Injectable()
 export class ProfileUseCase {
-  getProfile() {
-    return { provider: 'kakao', email: 'kakao@kakao.com', createdAt: new Date() };
+  constructor(private readonly ProfileService: ProfileService) {}
+
+  async getProfile() {
+    return await this.ProfileService.getProfile();
   }
 }

@@ -2,18 +2,18 @@ export class ProfileResponseDto {
   readonly code: string;
   readonly message: string;
   readonly data: {
-    readonly provider: string;
-    readonly email: string;
     readonly createdAt: string;
+    readonly provider?: string;
+    readonly email?: string;
   };
 
-  constructor(code: string, message: string, provider: string, email: string, createdAt: Date) {
+  constructor(code: string, message: string, createdAt: Date, provider?: string, email?: string) {
     this.code = code;
     this.message = message;
     this.data = {
+      createdAt: createdAt.toISOString(),
       provider,
       email,
-      createdAt: createdAt.toISOString(),
     };
   }
 }
