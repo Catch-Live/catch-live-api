@@ -1,23 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SignoutController } from 'src/interfaces/signout/signout.controller';
-import { SignoutUseCase } from 'src/application/signout/signout.use-case';
+import { INestApplication } from '@nestjs/common';
+import * as request from 'supertest';
+import { ValidationPipe } from '@nestjs/common';
+import { SignoutModule } from 'src/interfaces/signout/signout.module';
 
 describe('SignoutController', () => {
-  let controller: SignoutController;
+  let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [SignoutController],
-      providers: [SignoutUseCase],
+      imports: [SignoutModule],
     }).compile();
 
-    controller = module.get<SignoutController>(SignoutController);
+    app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    await app.init();
   });
 
-  it('응답이 기대하던 형태로 전송되는지 확인', () => {
-    const response = controller.deleteUser();
-    console.log('response: ', response);
-    expect(response).toHaveProperty('code', '200');
-    expect(response).toHaveProperty('message', 'ok');
+  it('db에서 응답이 오는지 확인', async () => {
+    const res = await request(app.getHttpServer()).delete('/users/me');
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('code', '200');
+    expect(res.body).toHaveProperty('message', 'OK');
+  });
+
+  it('삭제된 유저를 삭제하려하면 500리턴', async () => {
+    const res = await request(app.getHttpServer()).delete('/users/me');
+    expect(res.status).toBe(500);
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });
