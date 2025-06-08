@@ -3,6 +3,6 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class ProfileUseCase {
   getProfile() {
-    return {};
+    return { provider: 'kakao', email: 'kakao@kakao.com', createdAt: new Date() };
   }
 }
