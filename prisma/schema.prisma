@@ -22,6 +22,7 @@ model User {
   tokens        Token[]
   notifications Notification[]
 
+  @@unique([provider, email])
   @@map("user")
 }
 
