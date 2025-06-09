@@ -47,6 +47,9 @@ export class AuthUseCase {
       provider: user.provider,
     });
 
+    // 6. RefreshToken 갱신
+    await this.userService.saveRefreshToken(user.userId, loginToken.refreshToken);
+
     return loginToken;
   }
 }
