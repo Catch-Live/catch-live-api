@@ -1,3 +1,5 @@
+import { Platform } from '../subscription/streamer.entity';
+
 export class LiveSessionEntity {
   constructor(
     public readonly liveSessionId: number,
@@ -13,4 +15,3 @@ export class LiveSessionEntity {
 }
 
 export type LiveSessionStatus = 'LIVE' | 'COMPLETED' | 'FAILED';
-export type Platform = 'CHZZK' | 'YOUTUBE';

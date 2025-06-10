@@ -9,4 +9,9 @@ export class StreamerEntity {
   ) {}
 }
 
-export type Platform = 'CHZZK' | 'YOUTUBE';
+export const Platform = {
+  CHZZK: 'CHZZK',
+  YOUTUBE: 'YOUTUBE',
+} as const;
+
+export type Platform = (typeof Platform)[keyof typeof Platform];

@@ -9,4 +9,10 @@ export class RecordingEntity {
   ) {}
 }
 
-export type RecordingStatus = 'RECORDING' | 'COMPLETED' | 'FAILED';
+export const RecordingStatus = {
+  RECORDING: 'RECORDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+} as const;
+
+export type RecordingStatus = (typeof RecordingStatus)[keyof typeof RecordingStatus];
