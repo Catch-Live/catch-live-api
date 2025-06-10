@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RequestCustomException } from 'src/interfaces/common/errors/request-custom-exception';
 import { SOCIAL_LOGIN_STRATEGY, SocialLoginStrategy } from './social-login.strategy';
+import { RequestCustomException } from 'src/interfaces/controller/common/errors/request-custom-exception';
 
 @Injectable()
 export class SocialLoginFactory {
