@@ -1,5 +1,5 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { MonitoringController } from './monitoring.cotroller';
+import { MonitoringController } from './monitoring.controller';
 import { IpWhitelistMiddleware } from '../common/filters/ ip-whitelist.middleware';
 import { MonitoringUseCase } from 'src/application/monitoring/monitoring.use-case';
 import { StreamerService } from 'src/domain/streamer/streamer.service';
@@ -31,7 +31,6 @@ import { RecordingWorkerCoreClient } from 'src/infrastructure/worker/recording-w
       provide: STREAMING_SERVER_CLIENT,
       useClass: StreamingServerCoreClient,
     },
-
     {
       provide: RECORDING_WORKER_CLIENT,
       useClass: RecordingWorkerCoreClient,
