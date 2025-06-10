@@ -21,4 +21,14 @@ export const FieldConstraintErrorMap: Partial<
   sortBy: {
     isIn: RequestErrorCode.INVALID_SORT_BY,
   },
+  provider: {
+    isIn: RequestErrorCode.INVALID_PROVIDER,
+    isString: RequestErrorCode.INVALID_PROVIDER,
+  },
+  authorizationCode: {
+    isString: RequestErrorCode.INVALID_QUERY_STRING,
+  },
+  state: {
+    isString: RequestErrorCode.INVALID_QUERY_STRING,
+  },
 };

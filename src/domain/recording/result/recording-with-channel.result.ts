@@ -1,6 +1,6 @@
 import { Platform } from 'src/domain/subscription/streamer.entity';
 import { RecordingStatus } from '../recording.entity';
-import { LiveStatus } from 'generated/prisma';
+import { LiveStatus } from '@prisma/client';
 
 export class RecordingWithChannelResult {
   constructor(
