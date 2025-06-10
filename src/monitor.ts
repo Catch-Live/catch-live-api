@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { getErrorMessage } from './support/error-message.util';
 import { API_PREFIX } from './support/constants';
 import { AppMonitoringModule } from './app-monitoring.module';
 import { RequestErrorCode } from './interfaces/controller/common/errors/request-error-code';
@@ -26,9 +25,8 @@ async function bootstrap() {
         const constraintKey = Object.keys(constraints)[0];
         const code =
           FieldConstraintErrorMap[field]?.[constraintKey] ?? RequestErrorCode.INVALID_QUERY_STRING;
-        const message = getErrorMessage(code);
 
-        return new RequestCustomException(message);
+        return new RequestCustomException(code);
       },
     })
   );
