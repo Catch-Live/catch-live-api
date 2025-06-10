@@ -18,19 +18,15 @@ export class AuthUseCase {
   async loginWithSocial(command: SocialLoginCommand): Promise<LoginToken | NeedSignupResponse> {
     const { provider, authorizationCode, state } = command;
 
-    // 1. OAuth 인증 서버로 AccessToken 요청
     const accessToken = await this.authService.getAccessToken(provider, authorizationCode, state);
 
-    // 2. AccessToken으로 사용자 정보 요청
     const userInfo = await this.authService.getUserInfo(provider, accessToken);
 
-    // 3. 유저 조회
     const user: UserEntity | null = await this.userService.getUserByProviderAndEmail(
       provider,
       userInfo.email
     );
 
-    // 4. 유저정보 없으면 email리턴
     if (!user) {
       return {
         needSignup: true,
@@ -40,14 +36,12 @@ export class AuthUseCase {
       };
     }
 
-    // 5. JWT 발급
     const loginToken: LoginToken = this.jwtUtil.generateLoginToken({
       userId: user.userId,
       email: user.email,
       provider: user.provider,
     });
 
-    // 6. RefreshToken 갱신
     await this.userService.saveRefreshToken(user.userId, loginToken.refreshToken);
 
     return loginToken;

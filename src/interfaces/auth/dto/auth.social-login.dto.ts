@@ -18,6 +18,10 @@ export class SocialLoginDto {
   state?: string;
 
   toCommand(): SocialLoginCommand {
-    return new SocialLoginCommand(this.provider, this.authorizationCode, this.state);
+    return {
+      provider: this.provider,
+      authorizationCode: this.authorizationCode,
+      state: this.state,
+    };
   }
 }

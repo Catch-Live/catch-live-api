@@ -1,6 +1,7 @@
 import { SocialLoginStrategy } from 'src/domain/auth/strategy/social-login.strategy';
 import axios from 'axios';
 import { Provider } from 'src/domain/user/user.entity';
+import { OAUTH_URL } from 'src/support/constants';
 
 export class GoogleStrategy implements SocialLoginStrategy {
   supports(provider: string): boolean {
@@ -16,24 +17,17 @@ export class GoogleStrategy implements SocialLoginStrategy {
       code: authorizationCode,
     });
 
-    const { data } = await axios.post<{ access_token: string }>(
-      'https://oauth2.googleapis.com/token',
-      params,
-      {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      }
-    );
+    const { data } = await axios.post<{ access_token: string }>(OAUTH_URL.TOKEN.GOOGLE, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
 
     return data.access_token;
   }
 
   async getUserInfo(accessToken: string): Promise<{ email: string }> {
-    const { data } = await axios.get<{ email: string }>(
-      'https://www.googleapis.com/oauth2/v2/userinfo',
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
+    const { data } = await axios.get<{ email: string }>(OAUTH_URL.USER_INFO.GOOGLE, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     return { email: data.email };
   }
 }

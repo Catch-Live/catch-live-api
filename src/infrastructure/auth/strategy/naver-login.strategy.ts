@@ -1,6 +1,7 @@
 import { SocialLoginStrategy } from 'src/domain/auth/strategy/social-login.strategy';
 import axios from 'axios';
 import { Provider } from 'src/domain/user/user.entity';
+import { OAUTH_URL } from 'src/support/constants';
 
 export class NaverStrategy implements SocialLoginStrategy {
   supports(provider: string): boolean {
@@ -16,24 +17,17 @@ export class NaverStrategy implements SocialLoginStrategy {
       state,
     });
 
-    const { data } = await axios.post<{ access_token: string }>(
-      'https://nid.naver.com/oauth2.0/token',
-      params,
-      {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      }
-    );
+    const { data } = await axios.post<{ access_token: string }>(OAUTH_URL.TOKEN.NAVER, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
 
     return data.access_token;
   }
 
   async getUserInfo(accessToken: string): Promise<{ email: string }> {
-    const { data } = await axios.get<{ response: { email: string } }>(
-      'https://openapi.naver.com/v1/nid/me',
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
+    const { data } = await axios.get<{ response: { email: string } }>(OAUTH_URL.USER_INFO.NAVER, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     return { email: data.response.email };
   }
 }
