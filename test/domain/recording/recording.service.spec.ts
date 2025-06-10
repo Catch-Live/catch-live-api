@@ -32,13 +32,22 @@ describe('RecordingService', () => {
   describe('getRecordings', () => {
     it('recordings와 nextCursor를 반환해야 한다. - 성공', async () => {
       // given
-      const command = new GetRecordingsCommand('q', 'COMPLETED', 'started_at', 0, undefined, 10);
+      const command = new GetRecordingsCommand(
+        'q',
+        undefined,
+        ['CHZZK'],
+        'started_at',
+        0,
+        undefined,
+        10
+      );
       const mockResult = {
         data: [
           new RecordingWithChannelResult(
             1,
             'title',
             'CHZZK',
+            'LIVE',
             'https://video.com',
             new Date(),
             new Date(),
@@ -62,7 +71,15 @@ describe('RecordingService', () => {
 
     it('repository에서 에러가 발생하면 예외가 전달되어야 한다. - 실패', async () => {
       // given
-      const command = new GetRecordingsCommand('q', 'COMPLETED', 'started_at', 0, undefined, 10);
+      const command = new GetRecordingsCommand(
+        'q',
+        undefined,
+        ['CHZZK'],
+        'started_at',
+        0,
+        undefined,
+        10
+      );
       const error = new Error('DB connection failed');
 
       mockRecordingRepository.getRecordings.mockRejectedValue(error);

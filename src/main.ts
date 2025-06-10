@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './interfaces/common/filters/http-exception.filter';
-import { FieldConstraintErrorMap } from './interfaces/recording/dto/field-error-map';
+import { FieldConstraintErrorMap } from './interfaces/common/dto/field-error-map';
 import { getErrorMessage } from './support/error-message.util';
 import { RequestErrorCode } from './interfaces/common/errors/request-error-code';
 import { RequestCustomException } from './interfaces/common/errors/request-custom-exception';

@@ -18,14 +18,15 @@ export class GetRecordingsResponseDto {
       recordings: this.recordings.map((r) => ({
         liveSessionId: r.liveSessionId,
         title: r.title,
-        platform: r.platform,
+        liveStatus: r.liveStatus,
         videoUrl: r.videoUrl,
         startedAt: r.startedAt,
         completedAt: r.completedAt,
-        status: r.status,
+        recordingStatus: r.recordingStatus,
         channel: {
           channelId: r.channelId,
           channelName: r.channelName,
+          platform: r.platform,
         },
       })),
       nextCursor: this.nextCursor,

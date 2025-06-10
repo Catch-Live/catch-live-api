@@ -11,7 +11,7 @@ import {
   createStreamer,
   createSubscription,
   createUser,
-} from 'test/utils/recording.test-factory';
+} from 'src/support/recording-factory.util';
 
 describe('RecordingController (e2e) with real MySQL', () => {
   let app: INestApplication<App>;
