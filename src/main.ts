@@ -34,6 +34,10 @@ async function bootstrap() {
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

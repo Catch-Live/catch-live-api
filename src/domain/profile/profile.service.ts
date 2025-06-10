@@ -6,13 +6,17 @@ import { ProfileResponseEntity } from 'src/domain/profile/entity/profile.respons
 export class ProfileService {
   constructor(private readonly profileCoreRepository: ProfileCoreRepository) {}
 
-  async getProfile() {
-    const data = await this.profileCoreRepository.findFirst();
-
-    if (data !== null) {
-      return new ProfileResponseEntity(data.created_at, data.provider, data.email);
-    } else {
-      throw new InternalServerErrorException('서버에서 요청을 처리할 수 없습니다.');
+  async getProfile(userId: number) {
+    if (userId === 0) {
+      throw new InternalServerErrorException('인증되지 않은 사용자입니다.');
     }
+
+    const data = await this.profileCoreRepository.findFirst(userId);
+
+    if (data === null) {
+      throw new InternalServerErrorException('인증되지 않은 사용자입니다.');
+    }
+
+    return new ProfileResponseEntity(data.created_at, data.provider, data.email);
   }
 }

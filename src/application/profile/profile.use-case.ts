@@ -3,9 +3,9 @@ import { ProfileService } from 'src/domain/profile/profile.service';
 
 @Injectable()
 export class ProfileUseCase {
-  constructor(private readonly ProfileService: ProfileService) {}
+  constructor(private readonly profileService: ProfileService) {}
 
-  async getProfile() {
-    return await this.ProfileService.getProfile();
+  async getProfile(userId: number) {
+    return this.profileService.getProfile(userId);
   }
 }

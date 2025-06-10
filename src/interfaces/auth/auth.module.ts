@@ -9,6 +9,7 @@ import { SocialLoginFactory } from 'src/domain/auth/strategy/social-login.factor
 import { KakaoStrategy } from 'src/infrastructure/auth/strategy/kakao-login.strategy';
 import { NaverStrategy } from 'src/infrastructure/auth/strategy/naver-login.strategy';
 import { GoogleStrategy } from 'src/infrastructure/auth/strategy/google-login.strategy';
+import { JwtStrategy } from 'src/application/auth/jwt.strategy';
 import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.strategy';
 
 @Module({
@@ -21,6 +22,7 @@ import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.str
     KakaoStrategy,
     NaverStrategy,
     GoogleStrategy,
+    JwtStrategy,
     {
       provide: SOCIAL_LOGIN_STRATEGY,
       useFactory: (kakao: KakaoStrategy, naver: NaverStrategy, google: GoogleStrategy) => [
