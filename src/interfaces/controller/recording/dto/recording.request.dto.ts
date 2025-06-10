@@ -2,7 +2,7 @@ import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { GetRecordingsCommand } from 'src/domain/recording/command/recording.command';
 import { RecordingStatus } from 'src/domain/recording/recording.entity';
-import { Platform } from 'src/domain/subscription/streamer.entity';
+import { Platform } from 'src/domain/streamer/streamer.entity';
 
 export class GetRecordingsRequestDto {
   @IsOptional()
@@ -40,14 +40,14 @@ export class GetRecordingsRequestDto {
   size?: number = 10;
 
   toCommand(): GetRecordingsCommand {
-    return new GetRecordingsCommand(
-      this.q,
-      this.recordingStatuses,
-      this.platforms,
-      this.sortBy,
-      this.order,
-      this.cursor,
-      this.size
-    );
+    return {
+      q: this.q,
+      recordingStatuses: this.recordingStatuses,
+      platforms: this.platforms,
+      sortBy: this.sortBy ?? 'started_at',
+      order: this.order ?? 0,
+      cursor: this.cursor,
+      size: this.size ?? 10,
+    };
   }
 }
