@@ -4,8 +4,10 @@ export class StreamerEntity {
     public readonly platform: Platform,
     public readonly channelId: string,
     public readonly channelName: string,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date
+    public isLive: boolean,
+    public readonly createdAt?: Date,
+    public readonly updatedAt?: Date,
+    public videoId?: string
   ) {}
 }
 

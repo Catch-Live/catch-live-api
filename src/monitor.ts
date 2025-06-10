@@ -2,15 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { getErrorMessage } from './support/error-message.util';
 import { API_PREFIX } from './support/constants';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
+import { AppMonitoringModule } from './app-monitoring.module';
 import { RequestErrorCode } from './interfaces/controller/common/errors/request-error-code';
 import { RequestCustomException } from './interfaces/controller/common/errors/request-custom-exception';
 import { HttpExceptionFilter } from './interfaces/controller/common/filters/http-exception.filter';
 import { FieldConstraintErrorMap } from './interfaces/controller/common/dto/field-error-map';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppMonitoringModule);
   // api path에 prefix 설정
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
@@ -35,7 +34,6 @@ async function bootstrap() {
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
-  app.set('trust proxy', true);
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

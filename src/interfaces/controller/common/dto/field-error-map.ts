@@ -1,4 +1,4 @@
-import { RequestErrorCode } from 'src/interfaces/common/errors/request-error-code';
+import { RequestErrorCode } from '../errors/request-error-code';
 
 export const FieldConstraintErrorMap: Partial<
   Record<string, Partial<Record<string, RequestErrorCode>>>
