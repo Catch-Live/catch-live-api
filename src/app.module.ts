@@ -20,6 +20,4 @@ import { RecordingModule } from './interfaces/controller/recording/recording.mod
   ],
   providers: [HealthCheckScheduler],
 })
-
-// 루트 모듈이자, DI 컨테이너의 진입점
 export class AppModule {}
