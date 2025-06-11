@@ -31,4 +31,11 @@ export const FieldConstraintErrorMap: Partial<
   state: {
     isString: RequestErrorCode.INVALID_QUERY_STRING,
   },
+  email: {
+    isString: RequestErrorCode.INVALID_QUERY_STRING,
+  },
+  nickname: {
+    isString: RequestErrorCode.INVALID_QUERY_STRING,
+    isLength: RequestErrorCode.INVALID_NICKNAME_LENGTH,
+  },
 };
