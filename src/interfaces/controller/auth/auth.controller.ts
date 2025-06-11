@@ -12,10 +12,7 @@ export class AuthController {
   constructor(private readonly authUseCase: AuthUseCase) {}
 
   @Post('login')
-  async login(
-    @Body() socialLoginDto: SocialLoginDto,
-    @Res({ passthrough: true }) res: Response
-  ): Promise<void> {
+  async login(@Body() socialLoginDto: SocialLoginDto, @Res() res: Response): Promise<void> {
     const command = socialLoginDto.toCommand();
     const result = await this.authUseCase.loginWithSocial(command);
 
