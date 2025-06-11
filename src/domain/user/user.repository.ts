@@ -10,4 +10,5 @@ export interface UserRepository {
   updateRefreshToken(userId: number, refreshToken: string): Promise<TokenEntity>;
   createUser(command: SignupCommand): Promise<number>;
   createToken(userId: number): Promise<void>;
+  findByNickname(nickname: string): Promise<UserEntity | null>;
 }

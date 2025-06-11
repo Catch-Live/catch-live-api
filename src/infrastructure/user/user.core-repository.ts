@@ -92,4 +92,34 @@ export class UserCoreRepository implements UserRepository {
       );
     }
   }
+
+  async findByNickname(nickname: string): Promise<UserEntity | null> {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          nickname,
+          is_deleted: false,
+        },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      return new UserEntity(
+        Number(user.user_id),
+        user.nickname ?? '',
+        user.email ?? '',
+        user.provider ?? 'KAKAO',
+        user.is_deleted ?? false,
+        user.created_at ?? null,
+        user.updated_at ?? null
+      );
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
+  }
 }
