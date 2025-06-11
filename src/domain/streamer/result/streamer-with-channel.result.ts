@@ -1,4 +1,4 @@
-import { Platform } from 'generated/prisma';
+import { Platform } from '@prisma/client';
 
 export interface StreamerWithChannelResult {
   streamerId: number;

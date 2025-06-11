@@ -1,6 +1,7 @@
 export const DomainErrorCode = {
   COMMON_ERROR: '1500',
   DB_SERVER_ERROR: '1501',
+  UNAUTHORIZED: '2400',
   INVALID_PROVIDER: '2401',
   INVALID_AUTHORIZATION_CODE: '2402',
   AUTH_TOKEN_EXPIRED: '2403',
@@ -16,6 +17,7 @@ export type DomainErrorCode = (typeof DomainErrorCode)[keyof typeof DomainErrorC
 export const DomainErrorMessage: Record<DomainErrorCode, string> = {
   [DomainErrorCode.COMMON_ERROR]: '서버에서 요청을 처리할 수 없습니다.',
   [DomainErrorCode.DB_SERVER_ERROR]: 'DB에 문제가 발생하였습니다.',
+  [DomainErrorCode.UNAUTHORIZED]: '인증에 실패하였습니다.',
   [DomainErrorCode.INVALID_PROVIDER]: '소셜 제공자가 유효하지 않습니다.',
   [DomainErrorCode.INVALID_AUTHORIZATION_CODE]: '인증 코드가 유효하지 않습니다.',
   [DomainErrorCode.AUTH_TOKEN_EXPIRED]: '토큰이 만료되었습니다. 다시 로그인해주세요.',

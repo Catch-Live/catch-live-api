@@ -1,4 +1,4 @@
-import { Platform } from 'generated/prisma';
+import { Platform } from '@prisma/client';
 import { LiveSessionStatus } from '../live-session.entity';
 
 export interface CreateLiveSessionCommand {
