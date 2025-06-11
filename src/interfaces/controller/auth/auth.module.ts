@@ -11,9 +11,10 @@ import { NaverStrategy } from 'src/infrastructure/auth/strategy/naver-login.stra
 import { GoogleStrategy } from 'src/infrastructure/auth/strategy/google-login.strategy';
 import { JwtStrategy } from 'src/application/auth/jwt.strategy';
 import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.strategy';
+import { ProfileModule } from 'src/interfaces/controller/profile/profile.module';
 
 @Module({
-  imports: [UserModule, JwtModule.register({})],
+  imports: [UserModule, ProfileModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [
     AuthUseCase,

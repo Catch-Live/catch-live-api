@@ -1,25 +1,19 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Request } from 'express';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
+import { ProfileService } from 'src/domain/profile/profile.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor() {
+  constructor(private readonly profileService: ProfileService) {
     const secret = process.env.JWT_ACCESS_SECRET;
     if (!secret) {
       throw new Error('JWT_ACCESS_SECRET 환경변수가 설정되어 있지 않습니다.');
     }
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-        (req: Request) => {
-          const token = req?.headers?.accesstoken;
-          if (!token) return null;
-          if (Array.isArray(token)) return token[0];
-          return token;
-        },
-      ]),
+      jwtFromRequest: ExtractJwt.fromExtractors([ExtractJwt.fromAuthHeaderAsBearerToken()]),
       secretOrKey: secret,
     });
   }
@@ -27,8 +21,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   validate(payload: { sub: { userId: number; email: string; provider: string } }) {
     const { userId, email, provider } = payload.sub ?? {};
     if (!userId || !email || !provider) {
-      throw new UnauthorizedException('인증되지 않은 사용자입니다.');
+      throw new DomainCustomException(401, DomainErrorCode.UNAUTHORIZED);
     }
+
     return { userId, email, provider };
   }
 }

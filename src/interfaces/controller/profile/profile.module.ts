@@ -9,5 +9,6 @@ import { ProfileCoreRepository } from 'src/infrastructure/profile/profile.core-r
   imports: [PrismaModule],
   controllers: [ProfileController],
   providers: [ProfileUseCase, ProfileService, ProfileCoreRepository],
+  exports: [ProfileService],
 })
 export class ProfileModule {}

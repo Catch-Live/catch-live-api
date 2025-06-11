@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
-import { ProfileModule } from './interfaces/profile/profile.module';
+import { ProfileModule } from './interfaces/controller/profile/profile.module';
 import { SubscriptionModule } from './interfaces/controller/subscription/subscription.module';
 import { AuthModule } from './interfaces/controller/auth/auth.module';
 import { UserModule } from './interfaces/controller/user/user.module';
