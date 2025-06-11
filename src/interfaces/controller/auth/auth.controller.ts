@@ -5,6 +5,7 @@ import { SocialLoginDto } from './dto/auth.social-login.dto';
 import { Response } from 'express';
 import { REFRESH_TOKEN_COOKIE_TTL } from 'src/support/constants';
 import { isNeedSignupResponse } from 'src/domain/auth/need-signup.response';
+import { SignupDto } from './dto/auth.signup.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,8 +13,7 @@ export class AuthController {
 
   @Post('login')
   async login(
-    @Body()
-    socialLoginDto: SocialLoginDto,
+    @Body() socialLoginDto: SocialLoginDto,
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
     const command = socialLoginDto.toCommand();
@@ -36,5 +36,13 @@ export class AuthController {
       })
       .status(HttpStatus.OK)
       .json(ResultResponseDto.success({ needSignup: false, accessToken }));
+  }
+
+  @Post('signup')
+  async signup(@Body() signupDto: SignupDto, @Res() res: Response) {
+    const command = signupDto.toCommand();
+    await this.authUseCase.signup(command);
+
+    res.status(HttpStatus.CREATED).json(ResultResponseDto.success());
   }
 }
