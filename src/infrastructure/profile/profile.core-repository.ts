@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { ProfileRepository } from 'src/domain/profile/profile.repo';
 import { ProfileResponseResult } from 'src/domain/profile/result/profile.response.result';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 
 @Injectable()
-export class ProfileCoreRepository {
+export class ProfileCoreRepository implements ProfileRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findFirst(userId: number) {

@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { ProfileCoreRepository } from 'src/infrastructure/profile/profile.core-repository';
+import { Injectable, Inject } from '@nestjs/common';
+import { ProfileRepository, PROFILE_REPOSITORY } from './profile.repo';
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly profileCoreRepository: ProfileCoreRepository) {}
+  constructor(@Inject(PROFILE_REPOSITORY) private readonly profileRepository: ProfileRepository) {}
 
   async getProfile(userId: number) {
-    return await this.profileCoreRepository.findFirst(userId);
+    return await this.profileRepository.findFirst(userId);
   }
 }
