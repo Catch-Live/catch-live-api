@@ -8,11 +8,11 @@ import { ResultResponseDto } from 'src/interfaces/controller/common/dto/result.r
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class ProfileController {
   constructor(private readonly profileUseCase: ProfileUseCase) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: Request, @Res() res: Response) {
     const requestDto = new ProfileRequestDto(req.user as any);
