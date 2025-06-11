@@ -1,12 +1,18 @@
 export class RecordingEntity {
   constructor(
-    public readonly recordingId: number,
     public readonly liveSessionId: number,
     public readonly videoUrl: string,
     public readonly startedAt: Date,
     public readonly completedAt: Date | null,
-    public readonly status: RecordingStatus
+    public readonly status: RecordingStatus,
+    public readonly recordingId?: number
   ) {}
 }
 
-export type RecordingStatus = 'RECORDING' | 'COMPLETED' | 'FAILED';
+export const RecordingStatus = {
+  RECORDING: 'RECORDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+} as const;
+
+export type RecordingStatus = (typeof RecordingStatus)[keyof typeof RecordingStatus];

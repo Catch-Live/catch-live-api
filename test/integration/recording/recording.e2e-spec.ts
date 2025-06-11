@@ -2,7 +2,6 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Streamer } from '@prisma/client';
 import { AppModule } from 'src/app.module';
-import { GetRecordingsRequestDto } from 'src/interfaces/recording/dto/recording.request.dto';
 import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { resetDatabase } from 'test/utils/reset-db';
@@ -11,7 +10,8 @@ import {
   createStreamer,
   createSubscription,
   createUser,
-} from 'test/utils/recording.test-factory';
+} from 'src/support/recording-factory.util';
+import { GetRecordingsRequestDto } from 'src/interfaces/controller/recording/dto/recording.request.dto';
 
 describe('RecordingController (e2e) with real MySQL', () => {
   let app: INestApplication<App>;

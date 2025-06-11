@@ -1,15 +1,15 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { HttpExceptionFilter } from './interfaces/common/filters/http-exception.filter';
-import { FieldConstraintErrorMap } from './interfaces/recording/dto/field-error-map';
-import { getErrorMessage } from './support/error-message.util';
-import { RequestErrorCode } from './interfaces/common/errors/request-error-code';
-import { RequestCustomException } from './interfaces/common/errors/request-custom-exception';
 import { API_PREFIX } from './support/constants';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule } from './app.module';
+import { RequestErrorCode } from './interfaces/controller/common/errors/request-error-code';
+import { RequestCustomException } from './interfaces/controller/common/errors/request-custom-exception';
+import { HttpExceptionFilter } from './interfaces/controller/common/filters/http-exception.filter';
+import { FieldConstraintErrorMap } from './interfaces/controller/common/dto/field-error-map';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // api path에 prefix 설정
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
@@ -26,14 +26,14 @@ async function bootstrap() {
         const constraintKey = Object.keys(constraints)[0];
         const code =
           FieldConstraintErrorMap[field]?.[constraintKey] ?? RequestErrorCode.INVALID_QUERY_STRING;
-        const message = getErrorMessage(code);
 
-        return new RequestCustomException(message);
+        return new RequestCustomException(code);
       },
     })
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.set('trust proxy', true);
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
