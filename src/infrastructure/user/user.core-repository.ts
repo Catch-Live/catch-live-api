@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { Provider, UserEntity } from 'src/domain/user/user.entity';
 import { UserRepository } from 'src/domain/user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenEntity } from 'src/domain/user/token.entity';
 import { SignupCommand } from 'src/domain/auth/command/signup.command';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 
 @Injectable()
 export class UserCoreRepository implements UserRepository {
@@ -56,23 +58,38 @@ export class UserCoreRepository implements UserRepository {
 
   async createUser(command: SignupCommand): Promise<number> {
     const { provider, email, nickname } = command;
-    const newUser = await this.prisma.user.create({
-      data: {
-        provider,
-        email,
-        nickname,
-      },
-    });
 
-    return Number(newUser.user_id);
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          provider,
+          email,
+          nickname,
+        },
+      });
+
+      return Number(newUser.user_id);
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
   }
 
   async createToken(userId: number): Promise<void> {
-    await this.prisma.token.create({
-      data: {
-        user_id: userId,
-        refresh_token: '',
-      },
-    });
+    try {
+      await this.prisma.token.create({
+        data: {
+          user_id: userId,
+          refresh_token: '',
+        },
+      });
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
   }
 }
