@@ -42,8 +42,8 @@ describe('ProfileController', () => {
       .set('Authorization', `Bearer ${accessToken}`);
     console.log(res.body);
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('code', '200');
-    expect(res.body).toHaveProperty('message', 'OK');
+    expect(res.body).toHaveProperty('code', '0000'); //result.response.dto.ts 참고
+    expect(res.body).toHaveProperty('message', 'SUCCESS'); //result.response.dto.ts 참고
     expect(res.body).toHaveProperty('data');
     expect(Object.values($Enums.Provider).includes(res.body.data.provider)).toBe(true);
     expect(res.body.data).toHaveProperty('email', testUser.email);

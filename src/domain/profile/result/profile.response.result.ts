@@ -1,6 +1,6 @@
 import { $Enums } from '@prisma/client';
 
-export class ProfileResponseEntity {
+export class ProfileResponseResult {
   readonly createdAt: Date;
   readonly provider?: string;
   readonly email?: string;
