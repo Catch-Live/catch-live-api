@@ -1,4 +1,4 @@
-export class SignoutResponseDto {
+export class UserResponseDto {
   readonly code: string;
   readonly message: string;
 

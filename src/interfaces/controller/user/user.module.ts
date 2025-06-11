@@ -1,16 +1,21 @@
 import { Module } from '@nestjs/common';
-import { USER_REPOSITORY } from 'src/domain/user/user.repository';
-import { UserService } from 'src/domain/user/user.service';
-import { UserCoreRepository } from 'src/infrastructure/user/user.core-repository';
+import { UserController } from './user.controller';
+import { UserUseCase } from 'src/application/user/user.use-case';
+import { PrismaModule } from 'src/infrastructure/prisma/prisma.module';
+import { SignoutService } from 'src/domain/signout/signout.service';
+import { SignoutCoreRepository } from 'src/infrastructure/signout/signout.core-repository';
+import { SIGNOUT_REPOSITORY } from 'src/domain/signout/signout.repo';
 
 @Module({
+  imports: [PrismaModule],
+  controllers: [UserController],
   providers: [
-    UserService,
+    UserUseCase,
+    SignoutService,
     {
-      provide: USER_REPOSITORY,
-      useClass: UserCoreRepository,
+      provide: SIGNOUT_REPOSITORY,
+      useClass: SignoutCoreRepository,
     },
   ],
-  exports: [UserService, USER_REPOSITORY],
 })
 export class UserModule {}
