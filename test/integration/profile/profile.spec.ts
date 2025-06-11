@@ -1,10 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { ProfileModule } from 'src/interfaces/profile/profile.module';
+import { ProfileModule } from 'src/interfaces/controller/profile/profile.module';
 import { $Enums } from '@prisma/client';
 import * as jwt from 'jsonwebtoken';
-import { AuthModule } from 'src/interfaces/auth/auth.module';
+import { AuthModule } from 'src/interfaces/controller/auth/auth.module';
+
+const testUser = {
+  userId: 3,
+  email: 'young@google.com',
+  provider: 'GOOGLE',
+};
 
 describe('ProfileController', () => {
   let app: INestApplication;
@@ -19,17 +25,9 @@ describe('ProfileController', () => {
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
 
-    accessToken = jwt.sign(
-      {
-        sub: {
-          userId: 1,
-          email: 'kakao@kakao.com',
-          provider: 'KAKAO',
-        },
-      },
-      process.env.JWT_ACCESS_SECRET as string,
-      { expiresIn: '1h' }
-    );
+    accessToken = jwt.sign({ sub: testUser }, process.env.JWT_ACCESS_SECRET as string, {
+      expiresIn: '1h',
+    });
   });
 
   it('JWT 없이 요청하면 401', async () => {
@@ -48,7 +46,7 @@ describe('ProfileController', () => {
     expect(res.body).toHaveProperty('message', 'OK');
     expect(res.body).toHaveProperty('data');
     expect(Object.values($Enums.Provider).includes(res.body.data.provider)).toBe(true);
-    expect(res.body.data).toHaveProperty('email', 'kakao@kakao.com');
+    expect(res.body.data).toHaveProperty('email', testUser.email);
   });
 
   afterAll(async () => {
