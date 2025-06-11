@@ -32,7 +32,6 @@ describe('ProfileController', () => {
 
   it('JWT 없이 요청하면 401', async () => {
     const res = await request(app.getHttpServer()).get('/users/me');
-    console.log(res.body);
     expect(res.status).toBe(401);
   });
 
@@ -40,7 +39,6 @@ describe('ProfileController', () => {
     const res = await request(app.getHttpServer())
       .get('/users/me')
       .set('Authorization', `Bearer ${accessToken}`);
-    console.log(res.body);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('code', '0000'); //result.response.dto.ts 참고
     expect(res.body).toHaveProperty('message', 'SUCCESS'); //result.response.dto.ts 참고
