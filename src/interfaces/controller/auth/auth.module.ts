@@ -9,7 +9,7 @@ import { SocialLoginFactory } from 'src/domain/auth/strategy/social-login.factor
 import { KakaoStrategy } from 'src/infrastructure/auth/strategy/kakao-login.strategy';
 import { NaverStrategy } from 'src/infrastructure/auth/strategy/naver-login.strategy';
 import { GoogleStrategy } from 'src/infrastructure/auth/strategy/google-login.strategy';
-import { JwtStrategy } from 'src/application/auth/jwt.strategy';
+import { JwtStrategy } from 'src/interfaces/controller/common/guards/jwt.strategy';
 import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.strategy';
 import { ProfileModule } from 'src/interfaces/controller/profile/profile.module';
 

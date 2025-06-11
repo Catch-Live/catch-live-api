@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { ProfileRequestDto } from './dto/profile.request.dto';
 import { ProfileResponseDto } from './dto/profile.response.dto';
 import { ProfileUseCase } from 'src/application/profile/profile.use-case';
-import { JwtAuthGuard } from 'src/application/auth/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/interfaces/controller/common/guards/jwt-auth.guard';
 import { ResultResponseDto } from 'src/interfaces/controller/common/dto/result.response.dto';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
