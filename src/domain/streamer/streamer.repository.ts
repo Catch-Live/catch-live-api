@@ -6,5 +6,5 @@ export const STREAMER_REPOSITORY = Symbol('StreamerRepository');
 export interface StreamerRepository {
   getStreamers(): Promise<StreamerWithChannelResult[]>;
   startLiveSession(query: StartLiveSessionCommand): Promise<void>;
-  clearVideoIdByStreamerId(streamerId: number): Promise<void>;
+  clearVideoInfo(streamerId: number): Promise<void>;
 }
