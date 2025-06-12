@@ -2,7 +2,7 @@ import { DomainErrorCode, DomainErrorMessage } from 'src/domain/common/errors/do
 import {
   RequestErrorCode,
   RequestErrorMessage,
-} from 'src/interfaces/common/errors/request-error-code';
+} from 'src/interfaces/controller/common/errors/request-error-code';
 
 export function getErrorMessage(code: string, fallback = '알 수 없는 에러입니다.') {
   return (

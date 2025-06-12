@@ -1,6 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { RequestCustomException } from 'src/interfaces/common/errors/request-custom-exception';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { SOCIAL_LOGIN_STRATEGY, SocialLoginStrategy } from './social-login.strategy';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 
 @Injectable()
 export class SocialLoginFactory {
@@ -12,7 +13,7 @@ export class SocialLoginFactory {
   findByProvider(provider: string): SocialLoginStrategy {
     const strategy = this.strategies.find((s) => s.supports(provider));
     if (!strategy) {
-      throw new RequestCustomException('지원하지 않는 소셜 로그인입니다.');
+      throw new DomainCustomException(HttpStatus.BAD_REQUEST, DomainErrorCode.INVALID_PROVIDER);
     }
     return strategy;
   }

@@ -1,10 +1,4 @@
-import { Platform } from '../streamer.entity';
-
-export interface ChannelResult {
-  channelId: string;
-  channelName: string;
-  platform: Platform;
-}
+import { ChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
 
 export class SubscriptionWithChannelResult {
   constructor(

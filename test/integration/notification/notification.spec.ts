@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { NotificationModule } from 'src/interfaces/notification/notification.module';
+import { NotificationModule } from 'src/interfaces/controller/notification/notification.module';
 import { ValidationPipe } from '@nestjs/common';
 
 describe('NotificationController', () => {

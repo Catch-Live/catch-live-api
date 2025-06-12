@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionUseCase } from 'src/application/subscription/subscription.use-case';
 import { SubscriptionWithChannelResult } from 'src/domain/subscription/result/subscription-with-channel.result';
-import { ResultResponseDto } from 'src/interfaces/common/dto/result.response.dto';
-import { GetSubscriptionsResponseDto } from 'src/interfaces/subscription/dto/subscription.response.dto';
-import { SubscriptionController } from 'src/interfaces/subscription/subscription.controller';
+import { ResultResponseDto } from 'src/interfaces/controller/common/dto/result.response.dto';
+import { GetSubscriptionsResponseDto } from 'src/interfaces/controller/subscription/dto/subscription.response.dto';
+import { SubscriptionController } from 'src/interfaces/controller/subscription/subscription.controller';
 
 describe('SubscriptionController', () => {
   let controller: SubscriptionController;
