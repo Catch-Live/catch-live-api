@@ -87,7 +87,7 @@ model LiveSession {
 model Recording {
   recording_id    BigInt           @id @default(autoincrement())
   live_session_id BigInt
-  video_url       String?
+  video_url       String?          @db.Text
   started_at      DateTime         @default(now())
   completed_at    DateTime?
   status          RecordingStatus? @default(RECORDING)
