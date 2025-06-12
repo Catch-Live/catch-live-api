@@ -9,7 +9,9 @@ import { HttpExceptionFilter } from './interfaces/controller/common/filters/http
 import { FieldConstraintErrorMap } from './interfaces/controller/common/dto/field-error-map';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: ['log', 'error', 'warn'],
+  });
   // api path에 prefix 설정
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
