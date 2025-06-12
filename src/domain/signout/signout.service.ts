@@ -11,12 +11,8 @@ export class SignoutService {
 
   async signoutUser(requestDto: SignoutRequestDto) {
     try {
-      const data = await this.signoutRepository.updateMany(requestDto);
-      if (data.is_updated === true) {
-        return new SignoutResponseResult(true);
-      } else {
-        throw new DomainCustomException(404, DomainErrorCode.USER_NOT_FOUND);
-      }
+      await this.signoutRepository.updateMany(requestDto);
+      return new SignoutResponseResult(true);
     } catch {
       throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
     }
