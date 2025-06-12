@@ -6,7 +6,7 @@ import { SocialLoginFactory } from './strategy/social-login.factory';
 export class AuthService {
   constructor(private readonly socialLoginFactory: SocialLoginFactory) {}
 
-  async getAccessToken(
+  async getOauthAccessToken(
     provider: Provider,
     authorizationCode: string,
     state?: string
@@ -15,7 +15,7 @@ export class AuthService {
     return await strategy.getAccessToken(authorizationCode, state);
   }
 
-  async getUserInfo(provider: Provider, accessToken: string): Promise<{ email: string }> {
+  async getOauthUserInfo(provider: Provider, accessToken: string): Promise<{ email: string }> {
     const strategy = this.socialLoginFactory.findByProvider(provider);
     return await strategy.getUserInfo(accessToken);
   }

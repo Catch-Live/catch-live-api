@@ -8,7 +8,7 @@ export class ResultResponseDto<T> {
     public readonly data?: T
   ) {}
 
-  static success<T>(data: T): ResultResponseDto<T> {
+  static success<T>(data?: T): ResultResponseDto<T> {
     return new ResultResponseDto('0000', 'SUCCESS', data);
   }
 
