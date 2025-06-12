@@ -3,10 +3,10 @@ import axios, { AxiosResponse } from 'axios';
 import { StreamingServerClient } from 'src/domain/streamer/client/streaming-server.client';
 import { LiveStreamerResult } from 'src/domain/streamer/result/live-streamer.result';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
-import { YouTubeSearchResponse } from './dto/youtube.dto';
-import { ChzzkLiveStatusResponse } from './dto/chzzk.dto';
 import { STREAMER_REPOSITORY, StreamerRepository } from 'src/domain/streamer/streamer.repository';
 import { getNextYouTubeApiKey } from 'src/support/client.util';
+import { YouTubeSearchResponse } from './dto/youtube.dto';
+import { ChzzkLiveStatusResponse } from './dto/chzzk.dto';
 
 @Injectable()
 export class StreamingServerCoreClient implements StreamingServerClient {
@@ -60,11 +60,11 @@ export class StreamingServerCoreClient implements StreamingServerClient {
         return;
       }
 
-      await this.streamerRepository.clearVideoIdByStreamerId(streamer?.streamerId);
+      await this.streamerRepository.clearVideoInfo(streamer?.streamerId);
       return;
     }
 
-    const streamer = streamers.find((s) => s.channel.videoId === liveItem.id);
+    const streamer = streamers.find((s) => s.channel.channelId === liveItem.snippet.channelId);
     if (!streamer) {
       return;
     }
@@ -111,7 +111,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
   }
 
   private createLiveStatusRequests(streamers: StreamerWithChannelResult[]): any[] {
-    const jobs = streamers.map((streamer) => {
+    const jobs = streamers.map(async (streamer) => {
       const { platform, channelId } = streamer.channel;
 
       if (platform === 'CHZZK') {
@@ -122,16 +122,26 @@ export class StreamingServerCoreClient implements StreamingServerClient {
         );
       }
 
-      if (platform === 'YOUTUBE' && streamer.channel.videoId !== '') {
-        const youtubeBaseUrl = process.env.YOUTUBE_BASE_URL;
+      if (platform === 'YOUTUBE') {
+        const youtubeBaseUrl = process.env.YOUTUBE_LIVE_URL;
+        const youtubeApiBaseUrl = process.env.YOUTUBE_BASE_URL;
+        const res = await axios.get(`${youtubeBaseUrl}/channel/${channelId}/live`, {});
+        const html = res.data as string;
+        const match = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
+        const videoId = match ? match[1] : null;
+
+        if (!videoId) {
+          return;
+        }
+
         const youtubeKey = getNextYouTubeApiKey();
         const params = {
           key: youtubeKey,
           part: 'snippet,liveStreamingDetails',
-          id: streamer.channel.videoId,
+          id: videoId,
         };
 
-        return axios.get<YouTubeSearchResponse>(`${youtubeBaseUrl}/youtube/v3/videos`, {
+        return axios.get<YouTubeSearchResponse>(`${youtubeApiBaseUrl}/youtube/v3/videos`, {
           params,
         });
       }
