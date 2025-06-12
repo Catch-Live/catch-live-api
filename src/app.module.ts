@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { ProfileModule } from './interfaces/controller/profile/profile.module';
 import { SubscriptionModule } from './interfaces/controller/subscription/subscription.module';
+import { LogoutModule } from './interfaces/controller/logout/logout.module';
 import { AuthModule } from './interfaces/controller/auth/auth.module';
 import { UserModule } from './interfaces/controller/user/user.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -13,6 +14,7 @@ import { RecordingModule } from './interfaces/controller/recording/recording.mod
     RecordingModule,
     SubscriptionModule,
     ProfileModule,
+    LogoutModule,
     PrismaModule,
     AuthModule,
     UserModule,
