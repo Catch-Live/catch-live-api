@@ -41,12 +41,12 @@ export class MonitoringUseCase {
 
     // 각 라이브 스트리머에 대해 녹화 프로세스 실행
     for (const streamer of liveStreamers) {
-      const startLiveSessioncommand: StartLiveSessionCommand = {
+      const startLiveSessionCommand: StartLiveSessionCommand = {
         streamerId: streamer.streamerId,
         isLive: true,
       };
       // 1. 스트리머 상태 변경 (isLive: false -> true)
-      await this.streamerService.startLiveSession(startLiveSessioncommand);
+      await this.streamerService.startLiveSession(startLiveSessionCommand);
 
       const createLiveSessionCommand: CreateLiveSessionCommand = {
         streamerId: streamer.streamerId,

@@ -4,8 +4,8 @@ import { RecordingService } from 'src/domain/recording/recording.service';
 import { RecordingUseCase } from 'src/application/recording/recording.use-case';
 import { RECORDING_REPOSITORY } from 'src/domain/recording/recording.repository';
 import { RecordingCoreRepository } from 'src/infrastructure/recording/recording.core-repository';
-import { RecordingWorkerCoreClient } from 'src/infrastructure/worker/recording-worker.core-client';
 import { RECORDING_WORKER_CLIENT } from 'src/domain/recording/client/recording-worker.client';
+import { RecordingWorkerCoreClient } from 'src/infrastructure/recording/worker/recording-worker.core-client';
 
 @Module({
   controllers: [RecordingController],

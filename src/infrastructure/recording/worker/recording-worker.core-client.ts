@@ -1,7 +1,11 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as net from 'net';
 import { RecordingWorkerClient } from 'src/domain/recording/client/recording-worker.client';
 import { RecordMessage, RecordPayload } from './dto/record-payload.dto';
+import {
+  RECORDING_REPOSITORY,
+  RecordingRepository,
+} from 'src/domain/recording/recording.repository';
 
 /**
  * 녹화 워커와 TCP 소켓으로 통신하는 클라이언트입니다.
@@ -12,6 +16,9 @@ import { RecordMessage, RecordPayload } from './dto/record-payload.dto';
  */
 @Injectable()
 export class RecordingWorkerCoreClient implements RecordingWorkerClient, OnModuleInit {
+  constructor(
+    @Inject(RECORDING_REPOSITORY) private readonly recordingRepository: RecordingRepository
+  ) {}
   onModuleInit() {
     this.run();
   }
@@ -56,17 +63,29 @@ export class RecordingWorkerCoreClient implements RecordingWorkerClient, OnModul
     });
 
     this.socket.on('data', (data) => {
-      const msg = data.toString();
-      try {
-        const parsed = JSON.parse(msg) as RecordMessage;
-        if (parsed.type === 'heartbeat' && parsed.payload === 'pong') {
-          this.logger.debug('Heartbeat received: pong');
-        } else {
+      void (async () => {
+        const msg = data.toString();
+        try {
+          const parsed = JSON.parse(msg) as RecordMessage;
+
+          if (parsed.type === 'heartbeat' && parsed.payload === 'pong') {
+            this.logger.debug('Heartbeat received: pong');
+            return;
+          }
+
+          if (parsed.type === 'record') {
+            this.logger.log(`received completed Recording MSG!`);
+
+            const { liveSessionId } = parsed.payload as RecordPayload;
+            await this.recordingRepository.completeLiveSession(liveSessionId);
+            return;
+          }
+
           this.logger.warn('Unknown message from worker:', parsed);
+        } catch (e) {
+          this.logger.error('Failed to parse message from worker:', (e as Error).message);
         }
-      } catch (e) {
-        this.logger.error('Failed to parse message from worker:', e.message);
-      }
+      })();
     });
 
     this.socket.on('error', (err) => {

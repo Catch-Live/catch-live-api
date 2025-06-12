@@ -12,4 +12,5 @@ export interface RecordingRepository {
   ): Promise<{ data: RecordingWithChannelResult[]; nextCursor: string | null }>;
   createRecording(entity: RecordingEntity): Promise<RecordingEntity>;
   createLiveSession(query: CreateLiveSessionCommand): Promise<LiveSessionEntity>;
+  completeLiveSession(livesSessionId: number): Promise<void>;
 }

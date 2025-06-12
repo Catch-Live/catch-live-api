@@ -50,7 +50,7 @@ export class StreamerCoreRepository implements StreamerRepository {
     });
   }
 
-  async clearVideoIdByStreamerId(streamerId: number): Promise<void> {
+  async clearVideoInfo(streamerId: number): Promise<void> {
     await this.prisma.streamer.update({
       where: { streamer_id: streamerId },
       data: { video_id: '' },
