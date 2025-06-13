@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationCoreRepository } from 'src/infrastructure/notification/notification.core-repository';
 import { NotificationsRequestDto } from 'src/interfaces/controller/notification/dto/notification.request.dto';
+import { NotificationResponseResults } from './result/notification.response.result';
 
 @Injectable()
 export class NotificationService {
@@ -14,6 +15,6 @@ export class NotificationService {
       nextCursor = notifications[notifications.length - 1].notificationId;
     }
 
-    return { nextCursor: nextCursor, notifications: notifications };
+    return new NotificationResponseResults(nextCursor, notifications);
   }
 }
