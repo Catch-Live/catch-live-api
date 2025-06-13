@@ -1,35 +1,30 @@
+import { Request } from 'express';
 import { NOTIFICATION_MAX_SIZE } from 'src/support/constants';
 
 export class NotificationsRequestDto {
-  readonly userId: number;
-  readonly size: number;
-  readonly cursor?: number;
+  readonly userId: number = 0;
+  readonly size: number = 0;
+  readonly cursor?: number = 0;
 
-  constructor(userId: any, size: any, cursor?: any) {
-    const convertedUserId = Number(userId);
-
-    if (isNaN(Number(convertedUserId)) || convertedUserId <= 0) {
-      this.userId = 0;
-    } else {
-      this.userId = convertedUserId;
+  constructor(req: Request) {
+    if (req.user !== undefined && req.user['userId'] !== undefined) {
+      const convertedUserId = Number(req.user['userId']);
+      if (!isNaN(convertedUserId) && convertedUserId > 0) {
+        this.userId = convertedUserId;
+      }
     }
 
-    const convertedSize = Number(size);
-
-    if (isNaN(Number(convertedSize))) {
-      this.size = 1;
-    } else if (convertedSize <= 0 || convertedSize > NOTIFICATION_MAX_SIZE) {
-      this.size = Number(NOTIFICATION_MAX_SIZE);
-    } else {
-      this.size = convertedSize;
+    if (req.query.size !== undefined) {
+      const convertedSize = Number(req.query.size);
+      if (!isNaN(convertedSize) && convertedSize > 0 && convertedSize <= NOTIFICATION_MAX_SIZE) {
+        this.size = convertedSize;
+      }
     }
 
-    if (cursor !== undefined) {
-      const convertedcursor = Number(cursor);
-      if (isNaN(Number(convertedcursor))) {
-        this.cursor = 0;
-      } else {
-        this.cursor = convertedcursor;
+    if (req.query.cursor !== undefined) {
+      const convertedCursor = Number(req.query.cursor);
+      if (!isNaN(convertedCursor) && convertedCursor > 0) {
+        this.cursor = convertedCursor;
       }
     }
   }
