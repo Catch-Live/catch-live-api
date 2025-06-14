@@ -43,7 +43,6 @@ export class AuthUseCase {
 
     const loginToken: LoginToken = this.jwtUtil.generateLoginToken({
       userId: user.userId,
-      email: user.email,
       provider: user.provider,
     });
 

@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 import { ProfileService } from 'src/domain/profile/profile.service';
+import { JwtPayload } from 'src/support/jwt.util';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -18,12 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: { sub: { userId: number; email: string; provider: string } }) {
-    const { userId, email, provider } = payload.sub ?? {};
-    if (!userId || !email || !provider) {
+  validate(payload: JwtPayload) {
+    const { userId, provider } = payload;
+    if (!userId || !provider) {
       throw new DomainCustomException(401, DomainErrorCode.UNAUTHORIZED);
     }
 
-    return { userId, email, provider };
+    return { userId, provider };
   }
 }
