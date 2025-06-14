@@ -38,4 +38,7 @@ export const FieldConstraintErrorMap: Partial<
     isString: RequestErrorCode.INVALID_QUERY_STRING,
     isLength: RequestErrorCode.INVALID_NICKNAME_LENGTH,
   },
+  channelUrl: {
+    isUrl: RequestErrorCode.INVALID_CHANNEL_URL,
+  },
 };

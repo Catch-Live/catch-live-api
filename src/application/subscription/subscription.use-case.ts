@@ -9,4 +9,8 @@ export class SubscriptionUseCase {
   async getSubscriptions(): Promise<SubscriptionWithChannelResult[]> {
     return this.subscriptionService.getSubscriptions();
   }
+
+  async subscribe(userId: number, channelUrl: string): Promise<void> {
+    await this.subscriptionService.subscribe(userId, channelUrl);
+  }
 }
