@@ -13,8 +13,10 @@ export class SubscriptionController {
   constructor(private readonly subscriptionUseCase: SubscriptionUseCase) {}
 
   @Get()
-  async getSubscriptions(): Promise<ResultResponseDto<GetSubscriptionsResponseDto>> {
-    const subscriptions = await this.subscriptionUseCase.getSubscriptions();
+  async getSubscriptions(
+    @UserId() userId: number
+  ): Promise<ResultResponseDto<GetSubscriptionsResponseDto>> {
+    const subscriptions = await this.subscriptionUseCase.getSubscriptions(userId);
 
     const responseDto = GetSubscriptionsResponseDto.of(subscriptions);
 

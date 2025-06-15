@@ -6,8 +6,8 @@ import { SubscriptionService } from 'src/domain/subscription/subscription.servic
 export class SubscriptionUseCase {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  async getSubscriptions(): Promise<SubscriptionWithChannelResult[]> {
-    return this.subscriptionService.getSubscriptions();
+  async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
+    return this.subscriptionService.getSubscriptions(userId);
   }
 
   async subscribe(userId: number, channelUrl: string): Promise<void> {

@@ -74,8 +74,12 @@ export class SubscriptionCoreRepository implements SubscriptionRepository {
     });
   }
 
-  async getSubscriptions(): Promise<SubscriptionWithChannelResult[]> {
+  async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
     const result = await this.prisma.subscription.findMany({
+      where: {
+        user_id: userId,
+        is_connected: true,
+      },
       select: {
         subscription_id: true,
         created_at: true,

@@ -5,7 +5,7 @@ import { SubscriptionEntity } from './subscription.entity';
 export const SUBSCRIPTION_REPOSITORY = Symbol('SubscriptionRepository');
 
 export interface SubscriptionRepository {
-  getSubscriptions(): Promise<SubscriptionWithChannelResult[]>;
+  getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]>;
   findSubscription(userId: number, streamerId: number): Promise<SubscriptionEntity | null>;
   reconnectSubscription(subscriptionId: number): Promise<void>;
   createSubscription(userId: number, streamerId: number): Promise<void>;

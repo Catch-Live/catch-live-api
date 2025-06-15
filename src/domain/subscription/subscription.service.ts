@@ -20,8 +20,8 @@ export class SubscriptionService {
     private readonly streamingServerClient: StreamingServerClient
   ) {}
 
-  async getSubscriptions(): Promise<SubscriptionWithChannelResult[]> {
-    return await this.subscriptionRepository.getSubscriptions();
+  async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
+    return await this.subscriptionRepository.getSubscriptions(userId);
   }
 
   async subscribe(userId: number, channelUrl: string): Promise<void> {
