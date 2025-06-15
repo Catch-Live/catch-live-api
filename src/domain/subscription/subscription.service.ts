@@ -25,6 +25,16 @@ export class SubscriptionService {
   }
 
   async subscribe(userId: number, channelUrl: string): Promise<void> {
+    const subscriptions = await this.subscriptionRepository.getSubscriptions(userId);
+    const SUBSCRIPTION_LIMIT = Number(process.env.SUBSCRIPTION_LIMIT);
+
+    if (subscriptions.length === SUBSCRIPTION_LIMIT) {
+      throw new DomainCustomException(
+        HttpStatus.FORBIDDEN,
+        DomainErrorCode.SUBSCRIPTION_LIMIT_EXCEEDED
+      );
+    }
+
     const channelInfo = await this.streamingServerClient.getChannelInfo(channelUrl);
 
     const streamer = await this.streamerRepository.findStreamerByChannelId(channelInfo.channelId);
@@ -44,12 +54,16 @@ export class SubscriptionService {
 
       if (subscription && !subscription.isConnected) {
         await this.subscriptionRepository.reconnectSubscription(subscription.subscriptionId);
+
+        // TODO: Redis isChanged true로 변경 추가
         return;
       }
 
       await this.subscriptionRepository.createSubscription(userId, streamer.streamerId);
+      // TODO: Redis isChanged true로 변경 추가
     }
 
     await this.subscriptionRepository.createSubscriptionWithStreamer(userId, channelInfo);
+    // TODO: Redis isChanged true로 변경 추가
   }
 }
