@@ -1,14 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { NotificationsRequestDto } from 'src/interfaces/controller/notification/dto/notification.request.dto';
-import { NotificationResponseResults } from './result/notification.response.result';
-import { NotificationRepository, NOTIFICATION_REPOSITORY } from './notification.repo';
+import { NotificationRequestCommand } from 'src/domain/notification/command/notification.command';
+import { NotificationResponseResults } from './result/notification.result';
+import { NotificationRepository, NOTIFICATION_REPOSITORY } from './notification.repository';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY) private readonly notificationRepository: NotificationRepository
   ) {}
-  async getNotification(query: NotificationsRequestDto) {
+  async getNotifications(query: NotificationRequestCommand) {
     const notifications = await this.notificationRepository.findMany(query);
 
     let nextCursor = 0;

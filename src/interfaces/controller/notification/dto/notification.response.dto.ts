@@ -1,7 +1,7 @@
 import {
   NotificationResponseResult,
   NotificationResponseResults,
-} from 'src/domain/notification/result/notification.response.result';
+} from 'src/domain/notification/result/notification.result';
 
 export class NotificationsResponseDto {
   readonly nextCursor: number;

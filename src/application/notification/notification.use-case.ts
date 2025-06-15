@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationService } from 'src/domain/notification/notification.service';
-import { NotificationsRequestDto } from 'src/interfaces/controller/notification/dto/notification.request.dto';
+import { NotificationRequestCommand } from 'src/domain/notification/command/notification.command';
 
 @Injectable()
 export class NotificationUseCase {
   constructor(private readonly notificationService: NotificationService) {}
 
-  async getNotification(query: NotificationsRequestDto) {
-    const entities = await this.notificationService.getNotification(query);
+  async getNotifications(query: NotificationRequestCommand) {
+    const entities = await this.notificationService.getNotifications(query);
 
     return entities;
   }

@@ -4,7 +4,7 @@ import { NOTIFICATION_MAX_SIZE } from 'src/support/constants';
 export class NotificationsRequestDto {
   readonly userId: number = 0;
   readonly size: number = 0;
-  readonly cursor?: number = 0;
+  readonly cursor?: number;
 
   constructor(req: Request) {
     if (req.user !== undefined && req.user['userId'] !== undefined) {
@@ -23,7 +23,7 @@ export class NotificationsRequestDto {
 
     if (req.query.cursor !== undefined) {
       const convertedCursor = Number(req.query.cursor);
-      if (!isNaN(convertedCursor) && convertedCursor > 0) {
+      if (!isNaN(convertedCursor)) {
         this.cursor = convertedCursor;
       }
     }

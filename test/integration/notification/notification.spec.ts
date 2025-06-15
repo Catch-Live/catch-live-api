@@ -49,6 +49,20 @@ describe('NotificationController', () => {
     expect(res.body.data.nextCursor).toBe(11);
   });
 
+  it('cursor 가 0일때와 cursor 가 없을때의 결과는 달라야 한다.', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/notifications?size=3&cursor=0')
+      .set('Authorization', `Bearer ${accessToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('code', '0000'); //result.response.dto.ts 참고
+    expect(res.body).toHaveProperty('message', 'SUCCESS'); //result.response.dto.ts 참고
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toHaveProperty('notifications');
+    expect(Array.isArray(res.body.data.notifications)).toBe(true);
+    expect(res.body.data.notifications.length).toBe(0);
+    expect(res.body.data.nextCursor).not.toBe(11);
+  });
+
   it('size와 cursor 전송시 cursor 부터 size 만큼 오는지 확인', async () => {
     const res = await request(app.getHttpServer())
       .get('/notifications?size=3&cursor=4')
