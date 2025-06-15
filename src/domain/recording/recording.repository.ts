@@ -13,4 +13,5 @@ export interface RecordingRepository {
   createRecording(entity: RecordingEntity): Promise<RecordingEntity>;
   createLiveSession(query: CreateLiveSessionCommand): Promise<LiveSessionEntity>;
   completeLiveSession(livesSessionId: number): Promise<void>;
+  failLiveSession(livesSessionId: number): Promise<void>;
 }
