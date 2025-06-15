@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { STREAMING_SERVER_CLIENT } from 'src/domain/streamer/client/streaming-server.client';
+import { STREAMER_REPOSITORY } from 'src/domain/streamer/streamer.repository';
 import { SubscriptionWithChannelResult } from 'src/domain/subscription/result/subscription-with-channel.result';
 import { SUBSCRIPTION_REPOSITORY } from 'src/domain/subscription/subscription.repository';
 import { SubscriptionService } from 'src/domain/subscription/subscription.service';
@@ -6,9 +8,11 @@ import { SubscriptionService } from 'src/domain/subscription/subscription.servic
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
 
-  const mockedRepository = {
+  const mockedSubscriptionRepository = {
     getSubscriptions: jest.fn(),
   };
+  const mockedStreamerRepository = {};
+  const mockedStreamingServerClient = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -16,7 +20,15 @@ describe('SubscriptionService', () => {
         SubscriptionService,
         {
           provide: SUBSCRIPTION_REPOSITORY,
-          useValue: mockedRepository,
+          useValue: mockedSubscriptionRepository,
+        },
+        {
+          provide: STREAMER_REPOSITORY,
+          useValue: mockedStreamerRepository,
+        },
+        {
+          provide: STREAMING_SERVER_CLIENT,
+          useValue: mockedStreamingServerClient,
         },
       ],
     }).compile();
@@ -35,13 +47,13 @@ describe('SubscriptionService', () => {
         }),
       ];
 
-      mockedRepository.getSubscriptions.mockResolvedValue(mockedSubscriptions);
+      mockedSubscriptionRepository.getSubscriptions.mockResolvedValue(mockedSubscriptions);
 
       // when
       const result = await service.getSubscriptions();
 
       // then
-      expect(mockedRepository.getSubscriptions).toHaveBeenCalled();
+      expect(mockedSubscriptionRepository.getSubscriptions).toHaveBeenCalled();
       expect(result).toEqual(mockedSubscriptions);
     });
 
@@ -49,11 +61,11 @@ describe('SubscriptionService', () => {
       // given
       const errorMessage = 'DB Error';
 
-      mockedRepository.getSubscriptions.mockRejectedValue(new Error(errorMessage));
+      mockedSubscriptionRepository.getSubscriptions.mockRejectedValue(new Error(errorMessage));
 
       // when & then
       await expect(service.getSubscriptions()).rejects.toThrow(errorMessage);
-      expect(mockedRepository.getSubscriptions).toHaveBeenCalled();
+      expect(mockedSubscriptionRepository.getSubscriptions).toHaveBeenCalled();
     });
   });
 });
