@@ -39,6 +39,7 @@ describe('SubscriptionService', () => {
   describe('getSubscriptions', () => {
     it('구독 목록(subscriptions)을 반환해야 한다. - 성공', async () => {
       // given
+      const userId = 1;
       const mockedSubscriptions = [
         new SubscriptionWithChannelResult(1, new Date(), {
           channelId: '123',
@@ -50,7 +51,7 @@ describe('SubscriptionService', () => {
       mockedSubscriptionRepository.getSubscriptions.mockResolvedValue(mockedSubscriptions);
 
       // when
-      const result = await service.getSubscriptions();
+      const result = await service.getSubscriptions(userId);
 
       // then
       expect(mockedSubscriptionRepository.getSubscriptions).toHaveBeenCalled();
@@ -59,12 +60,13 @@ describe('SubscriptionService', () => {
 
     it('repository에서 에러 발생 시 예외를 반환해야 한다. - 실패', async () => {
       // given
+      const userId = 1;
       const errorMessage = 'DB Error';
 
       mockedSubscriptionRepository.getSubscriptions.mockRejectedValue(new Error(errorMessage));
 
       // when & then
-      await expect(service.getSubscriptions()).rejects.toThrow(errorMessage);
+      await expect(service.getSubscriptions(userId)).rejects.toThrow(errorMessage);
       expect(mockedSubscriptionRepository.getSubscriptions).toHaveBeenCalled();
     });
   });

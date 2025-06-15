@@ -29,6 +29,7 @@ describe('SubscriptionController', () => {
   describe('getSubscriptions', () => {
     it('구독 목록(subscriptions)을 반환해야 한다. - 성공', async () => {
       // given
+      const userId = 1;
       const mockedSubscriptions = [
         new SubscriptionWithChannelResult(1, new Date(), {
           channelId: '123',
@@ -40,7 +41,7 @@ describe('SubscriptionController', () => {
       mockedUseCase.getSubscriptions.mockResolvedValue(mockedSubscriptions);
 
       // when
-      const result = await controller.getSubscriptions();
+      const result = await controller.getSubscriptions(userId);
 
       // then
       expect(mockedUseCase.getSubscriptions).toHaveBeenCalled();
@@ -51,12 +52,13 @@ describe('SubscriptionController', () => {
 
     it('usecase에서 에러 발생 시 예외가 반환되어야 한다. - 실패', async () => {
       // given
+      const userId = 1;
       const errorMessage = 'UseCase Error';
 
       mockedUseCase.getSubscriptions.mockRejectedValue(new Error(errorMessage));
 
       // when & then
-      await expect(controller.getSubscriptions()).rejects.toThrow(errorMessage);
+      await expect(controller.getSubscriptions(userId)).rejects.toThrow(errorMessage);
       expect(mockedUseCase.getSubscriptions).toHaveBeenCalled();
     });
   });
