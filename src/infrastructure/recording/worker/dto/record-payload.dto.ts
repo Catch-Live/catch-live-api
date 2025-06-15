@@ -2,9 +2,8 @@ export interface RecordPayload {
   streamUrl: string;
   liveSessionId: number;
   title: string;
-}
-
-export interface RecordMessage {
-  type: 'record' | 'heartbeat';
-  payload: 'ping' | 'pong' | RecordPayload;
+  streamerId: number;
+  workerId?: string;
+  retryCount?: number; // 기본 0
+  status?: 'COMPLETED' | 'FAILED';
 }

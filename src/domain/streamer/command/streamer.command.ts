@@ -1,4 +1,4 @@
-export interface StartLiveSessionCommand {
+export interface LiveSessionCommand {
   streamerId: number;
   isLive: boolean;
 }

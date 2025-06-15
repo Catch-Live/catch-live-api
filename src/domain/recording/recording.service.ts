@@ -24,8 +24,8 @@ export class RecordingService {
     return this.recordingRepository.createLiveSession(command);
   }
 
-  recordLiveStreaming(command: RecordLiveStreamingCommand) {
-    const { liveSessionId, platform, channelId, videoId, title } = command;
+  async recordLiveStreaming(command: RecordLiveStreamingCommand) {
+    const { liveSessionId, platform, channelId, videoId, title, streamerId } = command;
     let streamUrl = '';
 
     if (platform === 'CHZZK') {
@@ -37,6 +37,6 @@ export class RecordingService {
       const youtubeBaseUrl = process.env.YOUTUBE_LIVE_URL;
       streamUrl = `${youtubeBaseUrl}/watch?v=${videoId}`;
     }
-    this.recordingWorkerClient.sendRecordJob(streamUrl, liveSessionId, title);
+    await this.recordingWorkerClient.sendRecordJob(streamUrl, liveSessionId, title, streamerId);
   }
 }

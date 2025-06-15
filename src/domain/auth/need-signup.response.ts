@@ -1,5 +1,9 @@
 import { LoginToken } from './login-token';
 
+export interface SignoutResponseResult {
+  is_updated: boolean;
+}
+
 export interface NeedSignupResponse {
   needSignup: true;
   user: {

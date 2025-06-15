@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { MonitoringUseCase } from 'src/application/monitoring/monitoring.use-case';
 
 @Controller('monitorings')
@@ -8,10 +8,5 @@ export class MonitoringController {
   @Get('/health')
   healthCheck() {
     return 'OK';
-  }
-
-  @Post('/subscriptions')
-  notifySubscription() {
-    this.monitoringUseCase.notifySubscription();
   }
 }
