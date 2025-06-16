@@ -1,8 +1,8 @@
-import { SignoutResponseResult } from './result/signout.response.result';
-import { UserRequestDto } from 'src/interfaces/controller/user/dto/user.request.dto';
+import { SignoutRequestCommand } from './command/signout.command';
+import { SignoutResponseEntity } from './entity/signout.entity';
 
 export const SIGNOUT_REPOSITORY = Symbol('SignoutRepository');
 
 export interface SignoutRepository {
-  updateMany(requestDto: UserRequestDto): Promise<SignoutResponseResult>;
+  updateMany(requestDto: SignoutRequestCommand): Promise<SignoutResponseEntity>;
 }

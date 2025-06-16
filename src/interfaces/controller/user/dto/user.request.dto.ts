@@ -1,11 +1,33 @@
+import { Request } from 'express';
+import { IsEmail } from 'class-validator';
+import { Provider } from 'src/domain/signout/command/signout.command';
+
 export class UserRequestDto {
   readonly userId: number;
-  readonly provider: string;
+  readonly provider: Provider;
+
+  @IsEmail()
   readonly email: string;
 
-  constructor({ userId, provider, email }: { userId?: any; provider?: any; email?: any }) {
-    this.userId = isNaN(Number(userId)) ? 0 : Number(userId);
-    this.provider = provider ? String(provider) : '';
-    this.email = email ? String(email) : '';
+  constructor(req: Request) {
+    if (req.user !== undefined && req.user['userId'] !== undefined) {
+      const convertedUserId = Number(req.user['userId']);
+      if (!isNaN(convertedUserId) && convertedUserId > 0) {
+        this.userId = convertedUserId;
+      }
+    }
+
+    if (req.user !== undefined && req.user['provider'] !== undefined) {
+      const contertedProvider = String(req.user['provider']);
+      if (Object.values(Provider).includes(contertedProvider as Provider)) {
+        this.provider = contertedProvider as Provider;
+      }
+    }
+
+    if (req.user !== undefined && req.user['email'] !== undefined) {
+      this.email = String(req.user['email']);
+    } else {
+      this.email = '';
+    }
   }
 }
