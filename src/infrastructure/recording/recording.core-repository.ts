@@ -10,7 +10,7 @@ import { CreateLiveSessionCommand } from 'src/domain/recording/command/live-sess
 
 @Injectable()
 export class RecordingCoreRepository implements RecordingRepository {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getRecordings(
     query: GetRecordingsCommand
@@ -29,7 +29,7 @@ export class RecordingCoreRepository implements RecordingRepository {
       }),
     };
 
-    const queryResult = await this.prismaService.vSubscribedSession.findMany({
+    const queryResult = await this.prisma.vSubscribedSession.findMany({
       where,
       take: size + 1,
       orderBy: {
@@ -63,7 +63,7 @@ export class RecordingCoreRepository implements RecordingRepository {
   }
 
   async createRecording(entity: RecordingEntity): Promise<RecordingEntity> {
-    const queryResult = await this.prismaService.recording.create({
+    const queryResult = await this.prisma.recording.create({
       data: {
         live_session_id: entity.liveSessionId,
         video_url: entity.videoUrl,
@@ -85,7 +85,7 @@ export class RecordingCoreRepository implements RecordingRepository {
 
   async createLiveSession(query: CreateLiveSessionCommand): Promise<LiveSessionEntity> {
     const { streamerId, platform, channelId, channelName, title, status } = query;
-    const queryResult = await this.prismaService.liveSession.create({
+    const queryResult = await this.prisma.liveSession.create({
       data: {
         streamer_id: streamerId,
         platform: platform,
@@ -107,5 +107,25 @@ export class RecordingCoreRepository implements RecordingRepository {
       queryResult.started_at,
       queryResult.ended_at
     );
+  }
+
+  async completeLiveSession(livesSessionId: number): Promise<void> {
+    await this.prisma.liveSession.update({
+      where: { live_session_id: livesSessionId },
+      data: {
+        status: 'COMPLETED',
+        ended_at: new Date(),
+      },
+    });
+  }
+
+  async failLiveSession(livesSessionId: number): Promise<void> {
+    await this.prisma.liveSession.update({
+      where: { live_session_id: livesSessionId },
+      data: {
+        status: 'FAILED',
+        ended_at: new Date(),
+      },
+    });
   }
 }

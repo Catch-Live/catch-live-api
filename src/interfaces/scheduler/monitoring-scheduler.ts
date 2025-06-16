@@ -7,7 +7,7 @@ export class MonitoringScheduler {
   constructor(private readonly monitoringUseCase: MonitoringUseCase) {}
 
   @Cron('*/10 * * * * *') // 10초마다 실행
-  recordLiveStreams() {
-    this.monitoringUseCase.recordLiveStreams();
+  async recordLiveStreams() {
+    await this.monitoringUseCase.recordLiveStreams();
   }
 }

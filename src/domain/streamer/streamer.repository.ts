@@ -1,10 +1,11 @@
-import { StartLiveSessionCommand } from './command/streamer.command';
+import { LiveSessionCommand } from './command/streamer.command';
 import { StreamerWithChannelResult } from './result/streamer-with-channel.result';
 
 export const STREAMER_REPOSITORY = Symbol('StreamerRepository');
 
 export interface StreamerRepository {
   getStreamers(): Promise<StreamerWithChannelResult[]>;
-  startLiveSession(query: StartLiveSessionCommand): Promise<void>;
-  clearVideoIdByStreamerId(streamerId: number): Promise<void>;
+  startLiveSession(query: LiveSessionCommand): Promise<void>;
+  endLiveSession(query: LiveSessionCommand): Promise<void>;
+  clearVideoInfo(streamerId: number): Promise<void>;
 }

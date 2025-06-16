@@ -15,6 +15,7 @@ export interface RecordLiveStreamingCommand {
   platform: Platform;
   channelId: string;
   liveSessionId: number;
+  streamerId: number;
   title: string;
   videoId?: string;
 }

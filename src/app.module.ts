@@ -7,6 +7,8 @@ import { UserModule } from './interfaces/controller/user/user.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HealthCheckScheduler } from './interfaces/scheduler/health-check-scheduler';
 import { RecordingModule } from './interfaces/controller/recording/recording.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
+import { StreamerModule } from './interfaces/controller/streamer/streamer.module';
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { RecordingModule } from './interfaces/controller/recording/recording.mod
     SubscriptionModule,
     ProfileModule,
     PrismaModule,
+    StreamerModule,
     AuthModule,
+    RedisModule,
     UserModule,
     ScheduleModule.forRoot(),
   ],
