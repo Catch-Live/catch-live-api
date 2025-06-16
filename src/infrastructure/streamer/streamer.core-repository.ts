@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { StreamerRepository } from 'src/domain/streamer/streamer.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
-import { StartLiveSessionCommand } from 'src/domain/streamer/command/streamer.command';
+import { LiveSessionCommand } from 'src/domain/streamer/command/streamer.command';
 
 @Injectable()
 export class StreamerCoreRepository implements StreamerRepository {
@@ -40,7 +40,17 @@ export class StreamerCoreRepository implements StreamerRepository {
     }));
   }
 
-  async startLiveSession(query: StartLiveSessionCommand): Promise<void> {
+  async startLiveSession(query: LiveSessionCommand): Promise<void> {
+    const { streamerId, isLive } = query;
+    await this.prisma.streamer.update({
+      where: { streamer_id: streamerId },
+      data: {
+        is_live: isLive,
+      },
+    });
+  }
+
+  async endLiveSession(query: LiveSessionCommand): Promise<void> {
     const { streamerId, isLive } = query;
     await this.prisma.streamer.update({
       where: { streamer_id: streamerId },
