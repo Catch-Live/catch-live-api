@@ -8,6 +8,7 @@ import {
 import { STREAMER_REPOSITORY, StreamerRepository } from '../streamer/streamer.repository';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
+import { CACHE_SERVICE, CacheService } from '../common/cache/cache.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -17,8 +18,12 @@ export class SubscriptionService {
     @Inject(STREAMER_REPOSITORY)
     private readonly streamerRepository: StreamerRepository,
     @Inject(STREAMING_SERVER_CLIENT)
-    private readonly streamingServerClient: StreamingServerClient
+    private readonly streamingServerClient: StreamingServerClient,
+    @Inject(CACHE_SERVICE)
+    private readonly cacheService: CacheService
   ) {}
+
+  private readonly IS_CHANGED_KEY = process.env.IS_CHANGED_KEY || 'monitoring:isChanged';
 
   async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
     return await this.subscriptionRepository.getSubscriptions(userId);
@@ -54,16 +59,18 @@ export class SubscriptionService {
 
       if (subscription && !subscription.isConnected) {
         await this.subscriptionRepository.reconnectSubscription(subscription.subscriptionId);
+        await this.cacheService.set(this.IS_CHANGED_KEY, 'true');
 
-        // TODO: Redis isChanged true로 변경 추가
         return;
       }
 
       await this.subscriptionRepository.createSubscription(userId, streamer.streamerId);
-      // TODO: Redis isChanged true로 변경 추가
+      await this.cacheService.set(this.IS_CHANGED_KEY, 'true');
+
+      return;
     }
 
     await this.subscriptionRepository.createSubscriptionWithStreamer(userId, channelInfo);
-    // TODO: Redis isChanged true로 변경 추가
+    await this.cacheService.set(this.IS_CHANGED_KEY, 'true');
   }
 }
