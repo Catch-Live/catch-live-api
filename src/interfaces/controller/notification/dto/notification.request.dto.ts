@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { NOTIFICATION_MAX_SIZE } from 'src/support/constants';
+import { NOTIFICATION_PAGE_SIZE } from 'src/support/constants';
 
 export class NotificationsRequestDto {
   readonly userId: number = 0;
@@ -16,7 +16,7 @@ export class NotificationsRequestDto {
 
     if (req.query.size !== undefined) {
       const convertedSize = Number(req.query.size);
-      if (!isNaN(convertedSize) && convertedSize > 0 && convertedSize <= NOTIFICATION_MAX_SIZE) {
+      if (!isNaN(convertedSize) && convertedSize > 0 && convertedSize <= NOTIFICATION_PAGE_SIZE) {
         this.size = convertedSize;
       }
     }
