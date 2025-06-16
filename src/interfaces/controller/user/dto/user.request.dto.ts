@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { IsEmail } from 'class-validator';
-import { Provider } from 'src/domain/signout/command/signout.command';
+import { Provider } from 'src/domain/user/user.command';
 
 export class UserRequestDto {
   readonly userId: number;
@@ -18,9 +18,9 @@ export class UserRequestDto {
     }
 
     if (req.user !== undefined && req.user['provider'] !== undefined) {
-      const contertedProvider = String(req.user['provider']);
-      if (Object.values(Provider).includes(contertedProvider as Provider)) {
-        this.provider = contertedProvider as Provider;
+      const convertedProvider = String(req.user['provider']);
+      if (Object.values(Provider).includes(convertedProvider as Provider)) {
+        this.provider = convertedProvider as Provider;
       }
     }
 

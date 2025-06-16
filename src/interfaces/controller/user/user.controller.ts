@@ -14,7 +14,7 @@ export class UserController {
   @Delete('me')
   async signoutUser(@Req() req: Request, @Res() res: Response) {
     const requestDto = new UserRequestDto(req);
-    await this.userUseCase.signoutUser(requestDto);
+    await this.userUseCase.signout(requestDto);
     const data = new UserResponseDto(String(HttpStatus.OK), 'OK');
     res.status(HttpStatus.OK).json(ResultResponseDto.success(data));
   }

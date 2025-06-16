@@ -1,19 +1,20 @@
 import { Module } from '@nestjs/common';
 import { UserController } from 'src/interfaces/controller/user/user.controller';
 import { UserUseCase } from 'src/application/user/user.use-case';
-import { SignoutService } from 'src/domain/signout/signout.service';
-import { SIGNOUT_REPOSITORY } from 'src/domain/signout/signout.repo';
-import { SignoutCoreRepository } from 'src/infrastructure/signout/signout.core-repository';
+import { UserService } from 'src/domain/user/user.service';
+import { USER_REPOSITORY } from 'src/domain/user/user.repository';
+import { UserCoreRepository } from 'src/infrastructure/user/user.core-repository';
 
 @Module({
   controllers: [UserController],
   providers: [
     UserUseCase,
-    SignoutService,
+    UserService,
     {
-      provide: SIGNOUT_REPOSITORY,
-      useClass: SignoutCoreRepository,
+      provide: USER_REPOSITORY,
+      useClass: UserCoreRepository,
     },
   ],
+  exports: [UserUseCase, UserService],
 })
 export class UserModule {}

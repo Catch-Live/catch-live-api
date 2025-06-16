@@ -1,6 +1,7 @@
 import { SignupCommand } from '../auth/command/signup.command';
 import { TokenEntity } from './token.entity';
 import { Provider, UserEntity } from './user.entity';
+import { UserRequestCommand } from './user.command';
 
 export const USER_REPOSITORY = Symbol('UserRepository');
 
@@ -11,4 +12,5 @@ export interface UserRepository {
   createUser(command: SignupCommand): Promise<number>;
   createToken(userId: number): Promise<void>;
   findByNickname(nickname: string): Promise<UserEntity | null>;
+  signout(command: UserRequestCommand): Promise<boolean>;
 }

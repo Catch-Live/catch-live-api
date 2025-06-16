@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { SignoutService } from 'src/domain/signout/signout.service';
-import { SignoutRequestCommand } from 'src/domain/signout/command/signout.command';
+import { UserService } from 'src/domain/user/user.service';
+import { UserRequestCommand } from 'src/domain/user/user.command';
 
 @Injectable()
 export class UserUseCase {
-  constructor(private readonly signoutService: SignoutService) {}
+  constructor(private readonly userService: UserService) {}
 
-  async signoutUser(requestDto: SignoutRequestCommand) {
-    return await this.signoutService.signoutUser(requestDto);
+  async signout(requestDto: UserRequestCommand) {
+    return await this.userService.signout(requestDto);
   }
 }

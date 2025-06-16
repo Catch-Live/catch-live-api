@@ -6,6 +6,7 @@ import { BCRYPT_ROUNDS } from 'src/support/constants';
 import { SignupCommand } from '../auth/command/signup.command';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
+import { UserRequestCommand } from './user.command';
 
 @Injectable()
 export class UserService {
@@ -34,5 +35,10 @@ export class UserService {
     const userId = await this.userRepository.createUser(command);
 
     await this.userRepository.createToken(userId);
+  }
+
+  async signout(command: UserRequestCommand) {
+    const queryData = await this.userRepository.signout(command);
+    return queryData;
   }
 }

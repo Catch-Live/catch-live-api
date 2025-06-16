@@ -1,8 +1,8 @@
 import { IsIn, IsNumber, IsEmail } from 'class-validator';
-import { Provider } from 'src/domain/signout/result/signout.result';
+import { Provider } from 'src/domain/user/user.entity';
 export { Provider };
 
-export class SignoutRequestCommand {
+export class UserRequestCommand {
   @IsNumber()
   readonly userId: number;
 
