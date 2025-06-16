@@ -12,6 +12,9 @@ import { GoogleStrategy } from 'src/infrastructure/auth/strategy/google-login.st
 import { JwtStrategy } from 'src/interfaces/controller/common/guards/jwt.strategy';
 import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.strategy';
 import { ProfileModule } from 'src/interfaces/controller/profile/profile.module';
+import { LogoutService } from 'src/domain/auth/logout.service';
+import { LogoutCoreRepository } from 'src/infrastructure/logout/logout.core-repository';
+import { LOGOUT_REPOSITORY } from 'src/domain/auth/logout.repo';
 
 @Module({
   imports: [UserModule, ProfileModule, JwtModule.register({})],
@@ -34,6 +37,11 @@ import { ProfileModule } from 'src/interfaces/controller/profile/profile.module'
       inject: [KakaoStrategy, NaverStrategy, GoogleStrategy],
     },
     SocialLoginFactory,
+    LogoutService,
+    {
+      provide: LOGOUT_REPOSITORY,
+      useClass: LogoutCoreRepository,
+    },
   ],
 })
 export class AuthModule {}

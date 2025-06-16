@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import * as jwt from 'jsonwebtoken';
-import { LogoutModule } from 'src/interfaces/controller/logout/logout.module';
 import { AuthModule } from 'src/interfaces/controller/auth/auth.module';
 
 const testUser = {
@@ -17,7 +16,7 @@ describe('LogoutController', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [LogoutModule, AuthModule],
+      imports: [AuthModule],
     }).compile();
 
     app = module.createNestApplication();
