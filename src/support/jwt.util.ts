@@ -1,19 +1,18 @@
 import { JwtService } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
 import { LoginToken } from 'src/domain/auth/login-token';
-import { Provider } from 'src/domain/user/user.entity';
 
 @Injectable()
 export class JwtUtil {
   constructor(private readonly jwtService: JwtService) {}
 
-  generateLoginToken(subject: { userId: number; email: string; provider: Provider }): LoginToken {
+  generateLoginToken(subject: JwtPayload): LoginToken {
     const accessToken = this.generateAccessToken(subject);
     const refreshToken = this.generateRefreshToken(subject);
     return { refreshToken, accessToken };
   }
 
-  generateAccessToken(subject: { userId: number; email: string; provider: Provider }): string {
+  generateAccessToken(subject: JwtPayload): string {
     return this.createToken(
       subject,
       process.env.JWT_ACCESS_EXPIRES_IN!,
@@ -21,7 +20,7 @@ export class JwtUtil {
     );
   }
 
-  generateRefreshToken(subject: { userId: number; email: string; provider: Provider }): string {
+  generateRefreshToken(subject: JwtPayload): string {
     return this.createToken(
       subject,
       process.env.JWT_REFRESH_EXPIRES_IN!,
@@ -29,18 +28,16 @@ export class JwtUtil {
     );
   }
 
-  private createToken(
-    subject: { userId: number; email: string; provider: Provider },
-    expiresIn: string,
-    secret: string
-  ): string {
-    return this.jwtService.sign(
-      { sub: subject },
-      {
-        secret,
-        expiresIn,
-        header: { alg: 'HS256', typ: 'JWT' },
-      }
-    );
+  private createToken(subject: JwtPayload, expiresIn: string, secret: string): string {
+    return this.jwtService.sign(subject, {
+      secret,
+      expiresIn,
+      header: { alg: 'HS256', typ: 'JWT' },
+    });
   }
 }
+
+export type JwtPayload = {
+  userId: number;
+  provider: string;
+};

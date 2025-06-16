@@ -4,6 +4,7 @@ import { STREAMING_SERVER_CLIENT, StreamingServerClient } from './client/streami
 import { LiveStreamerResult } from './result/live-streamer.result';
 import { LiveSessionCommand } from './command/streamer.command';
 import { StreamerWithChannelResult } from './result/streamer-with-channel.result';
+import { ChannelInfo, StreamerEntity } from './streamer.entity';
 
 @Injectable()
 export class StreamerService {
@@ -24,5 +25,17 @@ export class StreamerService {
 
   async startLiveSession(command: LiveSessionCommand): Promise<void> {
     await this.streamerRepository.startLiveSession(command);
+  }
+
+  async getChannelInfo(channelUrl: string) {
+    return await this.streamingServerClient.getChannelInfo(channelUrl);
+  }
+
+  async getStreamerByChannelId(channelId: string) {
+    return await this.streamerRepository.getStreamerByChannelId(channelId);
+  }
+
+  async createStreamer(channelInfo: ChannelInfo): Promise<StreamerEntity> {
+    return await this.streamerRepository.createStreamer(channelInfo);
   }
 }
