@@ -122,10 +122,10 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       const { platform, channelId } = streamer.channel;
 
       if (platform === 'CHZZK') {
-        const chzzkBaseUrl = process.env.CHZZK_BASE_URL;
+        const CHZZK_BASE_URL = process.env.CHZZK_BASE_URL!;
 
         return axios.get<ChzzkLiveStatusResponse>(
-          `${chzzkBaseUrl}/polling/v2/channels/${channelId}/live-status`
+          `${CHZZK_BASE_URL}/polling/v2/channels/${channelId}/live-status`
         );
       }
 
@@ -190,9 +190,9 @@ export class StreamingServerCoreClient implements StreamingServerClient {
         throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
       }
 
-      const chzzkBaseUrl = process.env.CHZZK_BASE_URL;
+      const CHZZK_BASE_URL = process.env.CHZZK_BASE_URL!;
       const response = await axios.get<ChzzkChannelResponse>(
-        `${chzzkBaseUrl}/service/v1/channels/${channelId}`,
+        `${CHZZK_BASE_URL}/service/v1/channels/${channelId}`,
         {
           headers: {
             'User-Agent':
@@ -217,14 +217,14 @@ export class StreamingServerCoreClient implements StreamingServerClient {
 
   private async getYoutubeChannelInfoFromHandle(handle: string) {
     const apiKey = getNextYouTubeApiKey();
-    const youtubeApiBaseUrl = process.env.YOUTUBE_BASE_URL;
+    const YOUTUBE_BASE_URL = process.env.YOUTUBE_BASE_URL!;
     const params = {
       part: 'snippet',
       forHandle: handle,
       key: apiKey,
     };
 
-    return axios.get<YouTubeChannelResponse>(`${youtubeApiBaseUrl}/youtube/v3/channels`, {
+    return axios.get<YouTubeChannelResponse>(`${YOUTUBE_BASE_URL}/youtube/v3/channels`, {
       params,
     });
   }
