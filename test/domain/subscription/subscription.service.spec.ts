@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CACHE_SERVICE } from 'src/domain/common/cache/cache.service';
 import { STREAMING_SERVER_CLIENT } from 'src/domain/streamer/client/streaming-server.client';
 import { STREAMER_REPOSITORY } from 'src/domain/streamer/streamer.repository';
 import { SubscriptionWithChannelResult } from 'src/domain/subscription/result/subscription-with-channel.result';
@@ -13,6 +14,7 @@ describe('SubscriptionService', () => {
   };
   const mockedStreamerRepository = {};
   const mockedStreamingServerClient = {};
+  const mockedCacheServerClient = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,6 +31,10 @@ describe('SubscriptionService', () => {
         {
           provide: STREAMING_SERVER_CLIENT,
           useValue: mockedStreamingServerClient,
+        },
+        {
+          provide: CACHE_SERVICE,
+          useValue: mockedCacheServerClient,
         },
       ],
     }).compile();
