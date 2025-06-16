@@ -103,4 +103,25 @@ export class SubscriptionCoreRepository implements SubscriptionRepository {
       },
     }));
   }
+
+  async getSubscriptionById(subscriptionId: number): Promise<SubscriptionEntity | null> {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: {
+        subscription_id: subscriptionId,
+      },
+    });
+
+    if (!subscription) {
+      return null;
+    }
+
+    return new SubscriptionEntity(
+      Number(subscription.subscription_id),
+      Number(subscription.user_id),
+      Number(subscription.streamer_id),
+      subscription.is_connected,
+      subscription.created_at,
+      subscription.updated_at
+    );
+  }
 }

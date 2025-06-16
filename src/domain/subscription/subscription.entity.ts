@@ -21,4 +21,10 @@ export class SubscriptionEntity {
 
     return this;
   }
+
+  disconnect() {
+    this.isConnected = false;
+
+    return this;
+  }
 }

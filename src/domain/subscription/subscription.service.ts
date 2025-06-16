@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { SUBSCRIPTION_REPOSITORY, SubscriptionRepository } from './subscription.repository';
 import { SubscriptionWithChannelResult } from './result/subscription-with-channel.result';
 import {
@@ -7,6 +7,8 @@ import {
 } from '../streamer/client/streaming-server.client';
 import { STREAMER_REPOSITORY, StreamerRepository } from '../streamer/streamer.repository';
 import { CACHE_SERVICE, CacheService } from '../common/cache/cache.service';
+import { DomainCustomException } from '../common/errors/domain-custom-exception';
+import { DomainErrorCode } from '../common/errors/domain-error-code';
 
 @Injectable()
 export class SubscriptionService {
@@ -47,5 +49,16 @@ export class SubscriptionService {
     }
 
     await this.cacheService.set(this.IS_CHANGED_KEY, 'true');
+  }
+
+  async unsubscribe(subscriptionId: number) {
+    const subscription = await this.subscriptionRepository.getSubscriptionById(subscriptionId);
+
+    if (subscription === null) {
+      throw new DomainCustomException(HttpStatus.NOT_FOUND, DomainErrorCode.SUBSCRIPTION_NOT_FOUND);
+    }
+
+    subscription.disconnect();
+    await this.subscriptionRepository.updateSubscription(subscription);
   }
 }

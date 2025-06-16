@@ -1,16 +1,17 @@
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 import { StreamerService } from 'src/domain/streamer/streamer.service';
 import { SubscriptionWithChannelResult } from 'src/domain/subscription/result/subscription-with-channel.result';
 import { SubscriptionService } from 'src/domain/subscription/subscription.service';
-import { TransactionManager } from '../common/transaction-manager';
+import { TRANSACTION_MANAGER, TransactionManager } from '../common/transaction-manager';
 
 @Injectable()
 export class SubscriptionUseCase {
   constructor(
     private readonly subscriptionService: SubscriptionService,
     private readonly streamerService: StreamerService,
+    @Inject(TRANSACTION_MANAGER)
     private readonly transactionManager: TransactionManager
   ) {}
 
@@ -55,5 +56,9 @@ export class SubscriptionUseCase {
     }
 
     await this.subscriptionService.subscribe(userId, streamer.streamerId);
+  }
+
+  async unsubscribe(subscriptionId: number) {
+    await this.subscriptionService.unsubscribe(subscriptionId);
   }
 }

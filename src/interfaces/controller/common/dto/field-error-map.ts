@@ -41,4 +41,7 @@ export const FieldConstraintErrorMap: Partial<
   channelUrl: {
     isUrl: RequestErrorCode.INVALID_CHANNEL_URL,
   },
+  subscriptionId: {
+    isNumber: RequestErrorCode.INVALID_SUBSCRIPTION_ID,
+  },
 };
