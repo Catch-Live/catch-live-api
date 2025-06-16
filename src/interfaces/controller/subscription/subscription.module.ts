@@ -8,12 +8,16 @@ import { STREAMING_SERVER_CLIENT } from 'src/domain/streamer/client/streaming-se
 import { StreamingServerCoreClient } from 'src/infrastructure/streamer/client/streaming-server.core-client';
 import { STREAMER_REPOSITORY } from 'src/domain/streamer/streamer.repository';
 import { StreamerCoreRepository } from 'src/infrastructure/streamer/streamer.core-repository';
+import { StreamerModule } from '../streamer/streamer.module';
+import { StreamerService } from 'src/domain/streamer/streamer.service';
 
 @Module({
+  imports: [StreamerModule],
   controllers: [SubscriptionController],
   providers: [
     SubscriptionUseCase,
     SubscriptionService,
+    StreamerService,
     {
       provide: SUBSCRIPTION_REPOSITORY,
       useClass: SubscriptionCoreRepository,

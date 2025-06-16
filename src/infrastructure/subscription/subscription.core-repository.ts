@@ -9,7 +9,7 @@ import { SubscriptionEntity } from 'src/domain/subscription/subscription.entity'
 export class SubscriptionCoreRepository implements SubscriptionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findSubscription(userId: number, streamerId: number): Promise<SubscriptionEntity | null> {
+  async getSubscription(userId: number, streamerId: number): Promise<SubscriptionEntity | null> {
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         user_id: userId,
@@ -31,13 +31,13 @@ export class SubscriptionCoreRepository implements SubscriptionRepository {
     );
   }
 
-  async reconnectSubscription(subscriptionId: number): Promise<void> {
+  async updateSubscription(subscription: SubscriptionEntity): Promise<void> {
     await this.prisma.subscription.update({
       where: {
-        subscription_id: subscriptionId,
+        subscription_id: subscription.subscriptionId,
       },
       data: {
-        is_connected: true,
+        is_connected: subscription.isConnected,
       },
     });
   }
