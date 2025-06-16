@@ -112,7 +112,20 @@ export class RecordingCoreRepository implements RecordingRepository {
   async completeLiveSession(livesSessionId: number): Promise<void> {
     await this.prisma.liveSession.update({
       where: { live_session_id: livesSessionId },
-      data: { status: 'COMPLETED' },
+      data: {
+        status: 'COMPLETED',
+        ended_at: new Date(),
+      },
+    });
+  }
+
+  async failLiveSession(livesSessionId: number): Promise<void> {
+    await this.prisma.liveSession.update({
+      where: { live_session_id: livesSessionId },
+      data: {
+        status: 'FAILED',
+        ended_at: new Date(),
+      },
     });
   }
 }

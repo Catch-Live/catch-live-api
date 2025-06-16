@@ -130,9 +130,9 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       }
 
       if (platform === 'YOUTUBE') {
-        const youtubeBaseUrl = process.env.YOUTUBE_LIVE_URL;
-        const youtubeApiBaseUrl = process.env.YOUTUBE_BASE_URL;
-        const res = await axios.get(`${youtubeBaseUrl}/channel/${channelId}/live`, {});
+        const YOUTUBE_LIVE_URL = process.env.YOUTUBE_LIVE_URL!;
+        const YOUTUBE_BASE_API_URL = process.env.YOUTUBE_BASE_URL!;
+        const res = await axios.get(`${YOUTUBE_LIVE_URL}/channel/${channelId}/live`, {});
         const html = res.data as string;
         const match = html.match(/"videoId":"([a-zA-Z0-9_-]{11})"/);
         const videoId = match ? match[1] : null;
@@ -148,7 +148,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
           id: videoId,
         };
 
-        return axios.get<YouTubeSearchResponse>(`${youtubeApiBaseUrl}/youtube/v3/videos`, {
+        return axios.get<YouTubeSearchResponse>(`${YOUTUBE_BASE_API_URL}/youtube/v3/videos`, {
           params,
         });
       }
