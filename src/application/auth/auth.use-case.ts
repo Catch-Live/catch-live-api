@@ -6,7 +6,6 @@ import { NeedSignupResponse } from 'src/domain/auth/need-signup.response';
 import { UserEntity } from 'src/domain/user/user.entity';
 import { UserService } from 'src/domain/user/user.service';
 import { JwtUtil } from 'src/support/jwt.util';
-import { LogoutService } from 'src/domain/auth/logout.service';
 import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 
 @Injectable()
@@ -14,8 +13,7 @@ export class AuthUseCase {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
-    private readonly jwtUtil: JwtUtil,
-    private readonly logoutService: LogoutService
+    private readonly jwtUtil: JwtUtil
   ) {}
 
   async loginWithSocial(command: SocialLoginCommand): Promise<LoginToken | NeedSignupResponse> {
@@ -51,6 +49,6 @@ export class AuthUseCase {
   }
 
   async logout(requestCommand: LogoutRequestCommand) {
-    return await this.logoutService.logout(requestCommand);
+    return await this.authService.logout(requestCommand);
   }
 }
