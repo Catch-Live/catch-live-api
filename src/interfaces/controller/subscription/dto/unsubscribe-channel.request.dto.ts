@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsNumber } from 'class-validator';
 
-export class unsubscribeChannelRequestDto {
+export class UnsubscribeChannelRequestDto {
   @Type(() => Number)
   @IsNumber()
   subscriptionId: number;

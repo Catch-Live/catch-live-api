@@ -6,7 +6,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/user.decorator';
 import { SubscribeChannelRequestDto } from './dto/subscribe-channel.request.dto';
-import { unsubscribeChannelRequestDto } from './dto/unsubscribe-channel.request.dto';
+import { UnsubscribeChannelRequestDto } from './dto/unsubscribe-channel.request.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('subscriptions')
@@ -40,7 +40,7 @@ export class SubscriptionController {
   @Delete(':subscriptionId')
   async unsubscribeChannel(
     @UserId() userId: number,
-    @Param() unsubscribeChannelRequestDto: unsubscribeChannelRequestDto,
+    @Param() unsubscribeChannelRequestDto: UnsubscribeChannelRequestDto,
     @Res() res: Response
   ) {
     const { subscriptionId } = unsubscribeChannelRequestDto;
