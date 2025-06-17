@@ -60,11 +60,7 @@ export class AuthController {
     }
 
     const command = new LogoutRequestCommand(requestDto.userId);
-    const result = await this.authUseCase.logout(command);
-
-    if (!result) {
-      throw new DomainCustomException(404, DomainErrorCode.USER_NOT_FOUND);
-    }
+    await this.authUseCase.logout(command);
 
     const data = new LogoutResponseDto(String(HttpStatus.OK), 'OK');
     res.status(HttpStatus.OK).json(ResultResponseDto.success(data));

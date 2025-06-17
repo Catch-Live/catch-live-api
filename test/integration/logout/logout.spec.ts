@@ -6,7 +6,6 @@ import { AuthModule } from 'src/interfaces/controller/auth/auth.module';
 
 const testUser = {
   userId: 3,
-  email: 'young@google.com',
   provider: 'GOOGLE',
 };
 
@@ -23,7 +22,7 @@ describe('LogoutController', () => {
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
 
-    accessToken = jwt.sign({ sub: testUser }, process.env.JWT_ACCESS_SECRET as string, {
+    accessToken = jwt.sign({ ...testUser }, process.env.JWT_ACCESS_SECRET as string, {
       expiresIn: '1h',
     });
   });
