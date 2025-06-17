@@ -23,6 +23,7 @@ export class GetRecordingsResponseDto {
         startedAt: r.startedAt,
         completedAt: r.completedAt,
         recordingStatus: r.recordingStatus,
+        recordingId: r.recordingId,
         channel: {
           channelId: r.channelId,
           channelName: r.channelName,

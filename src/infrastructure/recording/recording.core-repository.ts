@@ -15,7 +15,7 @@ export class RecordingCoreRepository implements RecordingRepository {
   async getRecordings(
     query: GetRecordingsCommand
   ): Promise<{ data: RecordingWithChannelResult[]; nextCursor: string | null }> {
-    const { q, recordingStatuses, platforms, sortBy, order, cursor, size } = query;
+    const { q, recordingStatuses, platforms, sortBy, order, cursor, size, userId } = query;
     const sortOrder = order === 1 ? 'asc' : 'desc';
     const where: Prisma.VSubscribedSessionWhereInput = {
       ...(q && {
@@ -27,6 +27,7 @@ export class RecordingCoreRepository implements RecordingRepository {
       ...(platforms && {
         platform: { in: platforms },
       }),
+      user_id: userId,
     };
 
     const queryResult = await this.prisma.vSubscribedSession.findMany({
@@ -56,6 +57,7 @@ export class RecordingCoreRepository implements RecordingRepository {
         recordingStatus: record.recording_status ?? 'RECORDING',
         channelId: record.channel_id ?? '',
         channelName: record.channel_name ?? '',
+        recordingId: Number(record.recording_id),
       };
     });
 
