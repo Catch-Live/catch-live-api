@@ -39,7 +39,6 @@ export class UserService {
   }
 
   async compareWithStoredRefreshToken(refreshToken: string, userId: number) {
-    // DB의 verifyToken과 일치 여부
     const encryptedToken = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
     const userToken = await this.userRepository.findTokenById(userId);
 
@@ -48,6 +47,6 @@ export class UserService {
       throw new DomainCustomException(HttpStatus.UNAUTHORIZED, DomainErrorCode.UNAUTHORIZED);
     }
 
-    return userToken.compare(encryptedToken);
+    await userToken.compare(encryptedToken);
   }
 }
