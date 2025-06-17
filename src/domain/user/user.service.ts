@@ -1,12 +1,9 @@
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { Provider, UserEntity } from './user.entity';
 import { USER_REPOSITORY, UserRepository } from './user.repository';
-import { hash } from 'bcrypt';
-import { BCRYPT_ROUNDS } from 'src/support/constants';
 import { SignupCommand } from '../auth/command/signup.command';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
-import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(
@@ -21,9 +18,7 @@ export class UserService {
   }
 
   async saveRefreshToken(userId: number, refreshToken: string) {
-    const hashedToken = await hash(refreshToken, BCRYPT_ROUNDS);
-
-    return this.userRepository.updateRefreshToken(userId, hashedToken);
+    return this.userRepository.updateRefreshToken(userId, refreshToken);
   }
 
   async signup(command: SignupCommand): Promise<void> {
@@ -39,7 +34,6 @@ export class UserService {
   }
 
   async compareWithStoredRefreshToken(refreshToken: string, userId: number) {
-    const encryptedToken = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
     const userToken = await this.userRepository.findTokenById(userId);
 
     if (userToken === null) {
@@ -47,6 +41,6 @@ export class UserService {
       throw new DomainCustomException(HttpStatus.UNAUTHORIZED, DomainErrorCode.UNAUTHORIZED);
     }
 
-    await userToken.compare(encryptedToken);
+    userToken.compare(refreshToken);
   }
 }
