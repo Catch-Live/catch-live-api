@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { SubscriptionUseCase } from 'src/application/subscription/subscription.use-case';
 import { ResultResponseDto } from '../common/dto/result.response.dto';
 import { GetSubscriptionsResponseDto } from './dto/subscription.response.dto';
@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { UserId } from '../common/decorators/user.decorator';
 import { SubscribeChannelRequestDto } from './dto/subscribe-channel.request.dto';
+import { UnsubscribeChannelRequestDto } from './dto/unsubscribe-channel.request.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('subscriptions')
@@ -34,5 +35,18 @@ export class SubscriptionController {
     await this.subscriptionUseCase.subscribe(userId, channelUrl);
 
     return res.status(201).json(ResultResponseDto.success());
+  }
+
+  @Delete(':subscriptionId')
+  async unsubscribeChannel(
+    @UserId() userId: number,
+    @Param() unsubscribeChannelRequestDto: UnsubscribeChannelRequestDto,
+    @Res() res: Response
+  ) {
+    const { subscriptionId } = unsubscribeChannelRequestDto;
+
+    await this.subscriptionUseCase.unsubscribe(subscriptionId);
+
+    return res.status(200).json(ResultResponseDto.success());
   }
 }
