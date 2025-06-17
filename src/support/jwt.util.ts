@@ -1,6 +1,8 @@
 import { JwtService } from '@nestjs/jwt';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { LoginToken } from 'src/domain/auth/login-token';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 
 @Injectable()
 export class JwtUtil {
@@ -34,6 +36,18 @@ export class JwtUtil {
       expiresIn,
       header: { alg: 'HS256', typ: 'JWT' },
     });
+  }
+
+  verifyRefreshToken(token: string) {
+    try {
+      this.jwtService.verify(token, { secret: process.env.JWT_REFRESH_SECRET! });
+    } catch {
+      throw new DomainCustomException(HttpStatus.UNAUTHORIZED, DomainErrorCode.UNAUTHORIZED);
+    }
+  }
+
+  decode(token: string): JwtPayload {
+    return this.jwtService.decode(token);
   }
 }
 
