@@ -9,3 +9,10 @@ export class NotificationRequestCommand {
     this.cursor = cursor;
   }
 }
+
+export interface CreateNotificationsCommand {
+  content: string;
+  subscriptions: {
+    userId: number;
+  }[];
+}

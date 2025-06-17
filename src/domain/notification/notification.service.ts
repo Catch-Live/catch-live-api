@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { NotificationRequestCommand } from 'src/domain/notification/command/notification.command';
+import {
+  CreateNotificationsCommand,
+  NotificationRequestCommand,
+} from 'src/domain/notification/command/notification.command';
 import { NotificationResponseResults } from './result/notification.result';
 import { NotificationRepository, NOTIFICATION_REPOSITORY } from './notification.repository';
 
@@ -17,5 +20,9 @@ export class NotificationService {
     }
 
     return new NotificationResponseResults(nextCursor, notifications);
+  }
+
+  async createNotifications(command: CreateNotificationsCommand): Promise<void> {
+    await this.notificationRepository.createNotifications(command);
   }
 }

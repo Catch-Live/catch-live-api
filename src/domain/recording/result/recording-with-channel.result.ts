@@ -4,6 +4,7 @@ import { LiveStatus } from '@prisma/client';
 
 export interface RecordingWithChannelResult {
   liveSessionId: number;
+  recordingId: number;
   title: string;
   platform: Platform;
   liveStatus: LiveStatus;

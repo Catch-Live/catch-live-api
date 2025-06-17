@@ -80,6 +80,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       streamerId: streamer.streamerId,
       channel: streamer.channel,
       createdAt: streamer.createdAt,
+      subscriptions: [...streamer.subscriptions],
       title: liveItem.snippet.title,
       videoId: liveItem.id,
     };
@@ -103,6 +104,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       streamerId: streamer.streamerId,
       channel: streamer.channel,
       createdAt: streamer.createdAt,
+      subscriptions: streamer.subscriptions && [...streamer.subscriptions],
       title: liveTitle,
     };
   }

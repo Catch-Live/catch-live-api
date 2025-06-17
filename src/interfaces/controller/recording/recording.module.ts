@@ -7,10 +7,11 @@ import { RECORDING_REPOSITORY } from 'src/domain/recording/recording.repository'
 import { RECORDING_WORKER_CLIENT } from 'src/domain/recording/client/recording-worker.client';
 import { RecordingWorkerCoreClient } from 'src/infrastructure/recording/worker/recording-worker.core-client';
 import { StreamerModule } from '../streamer/streamer.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   controllers: [RecordingController],
-  imports: [StreamerModule],
+  imports: [StreamerModule, NotificationModule],
   providers: [
     RecordingService,
     RecordingUseCase,

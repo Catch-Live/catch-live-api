@@ -11,6 +11,10 @@ import {
   RecordingQueueClient,
 } from 'src/domain/recording/client/recording-queue.client';
 import { CACHE_SERVICE, CacheService } from 'src/domain/common/cache/cache.service';
+import {
+  NOTIFICATION_REPOSITORY,
+  NotificationRepository,
+} from 'src/domain/notification/notification.repository';
 
 /**
  * RecordingWorkerCoreClient
@@ -57,7 +61,9 @@ export class RecordingWorkerCoreClient
     @Inject(RECORDING_REPOSITORY)
     private readonly recordingRepository: RecordingRepository,
     @Inject(STREAMER_REPOSITORY)
-    private readonly streamerRepository: StreamerRepository
+    private readonly streamerRepository: StreamerRepository,
+    @Inject(NOTIFICATION_REPOSITORY)
+    private readonly notificationRepository: NotificationRepository
   ) {}
 
   onModuleInit() {
@@ -75,14 +81,20 @@ export class RecordingWorkerCoreClient
     liveSessionId: number,
     title: string,
     streamerId: number,
-    retryCount = 0
+    channelName: string,
+    subscriptions: {
+      userId: number;
+    }[],
+    retryCount?: number
   ): Promise<void> {
     const payload: RecordPayload = {
       streamUrl,
       liveSessionId,
       title,
       streamerId,
-      retryCount,
+      retryCount: retryCount ?? 0,
+      channelName,
+      subscriptions,
     };
 
     const score = Date.now();
@@ -103,7 +115,7 @@ export class RecordingWorkerCoreClient
       )) as RecordPayload;
       if (!doneJob) return;
 
-      const { streamerId, liveSessionId, status, workerId } = doneJob;
+      const { streamerId, liveSessionId, status, workerId, channelName, subscriptions } = doneJob;
       if (!workerId) return;
 
       this.logger.log(`작업 완료 큐 수신 - 워커 ${workerId}, 세션 ${liveSessionId}`);
@@ -115,11 +127,11 @@ export class RecordingWorkerCoreClient
       await this.cacheService.removeHashField(this.JOB_META_KEY, String(liveSessionId));
 
       if (status === 'COMPLETED') {
-        return this.handleCompletedJob(liveSessionId, streamerId);
+        return this.handleCompletedJob(liveSessionId, streamerId, channelName, subscriptions);
       }
 
       if (status === 'FAILED') {
-        return this.handleFailedJob(liveSessionId, streamerId);
+        return this.handleFailedJob(liveSessionId, streamerId, channelName, subscriptions);
       }
 
       this.logger.warn(`처리되지 않은 작업 상태: ${status}`);
@@ -128,17 +140,39 @@ export class RecordingWorkerCoreClient
     }
   }
 
-  private async handleCompletedJob(liveSessionId: number, streamerId: number) {
+  private async handleCompletedJob(
+    liveSessionId: number,
+    streamerId: number,
+    channelName: string,
+    subscriptions: {
+      userId: number;
+    }[]
+  ) {
     this.logger.log(`녹화 완료 처리 시작 - 세션 ${liveSessionId}`);
     await this.recordingRepository.completeLiveSession(liveSessionId);
     await this.streamerRepository.endLiveSession({ streamerId, isLive: false });
+    await this.notificationRepository.createNotifications({
+      subscriptions: subscriptions,
+      content: `⚪️ 스트리머 '${channelName}'님의 라이브 녹화가 종료되었습니다.`,
+    });
     this.logger.log(`DB 업데이트 완료 - 세션 ${liveSessionId}`);
   }
 
-  private async handleFailedJob(liveSessionId: number, streamerId: number) {
+  private async handleFailedJob(
+    liveSessionId: number,
+    streamerId: number,
+    channelName: string,
+    subscriptions: {
+      userId: number;
+    }[]
+  ) {
     this.logger.warn(`녹화 실패 처리됨 - 세션 ${liveSessionId}`);
     await this.recordingRepository.failLiveSession(liveSessionId);
     await this.streamerRepository.endLiveSession({ streamerId, isLive: false });
+    await this.notificationRepository.createNotifications({
+      subscriptions: subscriptions,
+      content: `⚪️ 스트리머 ${channelName}님의 라이브 녹화가 종료되었습니다.`,
+    });
     this.logger.log(`DB 업데이트 완료 - 세션 ${liveSessionId}`);
   }
 
