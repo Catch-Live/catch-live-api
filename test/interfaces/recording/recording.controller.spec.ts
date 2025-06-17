@@ -61,7 +61,7 @@ describe('RecordingController', () => {
       } as unknown as Response;
 
       // when
-      await controller.getRecordings(requestDto, mockResponse);
+      await controller.getRecordings(requestDto, 1, mockResponse);
 
       // then
       expect(mockUseCase.getRecordings).toHaveBeenCalledWith(command);
@@ -101,7 +101,7 @@ describe('RecordingController', () => {
       } as unknown as Response;
 
       // when & then
-      await expect(controller.getRecordings(requestDto, mockResponse)).rejects.toThrow(
+      await expect(controller.getRecordings(requestDto, 1, mockResponse)).rejects.toThrow(
         '유스케이스 처리 중 에러'
       );
 
