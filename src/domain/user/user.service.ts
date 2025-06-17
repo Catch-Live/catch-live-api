@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { Provider, UserEntity } from './user.entity';
 import { USER_REPOSITORY, UserRepository } from './user.repository';
 import { hash } from 'bcrypt';
@@ -6,13 +6,15 @@ import { BCRYPT_ROUNDS } from 'src/support/constants';
 import { SignupCommand } from '../auth/command/signup.command';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository
   ) {}
+
+  private readonly logger = new Logger(UserService.name);
 
   getUserByProviderAndEmail(provider: Provider, email: string): Promise<UserEntity | null> {
     return this.userRepository.findByProviderAndEmail(provider, email);
@@ -34,5 +36,18 @@ export class UserService {
     const userId = await this.userRepository.createUser(command);
 
     await this.userRepository.createToken(userId);
+  }
+
+  async compareWithStoredRefreshToken(refreshToken: string, userId: number) {
+    // DB의 verifyToken과 일치 여부
+    const encryptedToken = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
+    const userToken = await this.userRepository.findTokenById(userId);
+
+    if (userToken === null) {
+      this.logger.error('DB 토큰 정보 없음');
+      throw new DomainCustomException(HttpStatus.UNAUTHORIZED, DomainErrorCode.UNAUTHORIZED);
+    }
+
+    return userToken.compare(encryptedToken);
   }
 }
