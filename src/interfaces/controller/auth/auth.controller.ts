@@ -14,6 +14,7 @@ import { LogoutRequestDto } from 'src/interfaces/controller/auth/dto/logout.requ
 import { LogoutResponseDto } from './dto/logout.response.dto';
 import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 import { SignupDto } from './dto/auth.signup.dto';
+import { REFRESH_TOKEN_COOKIE_NAME } from 'src/support/constants';
 
 @Controller('auth')
 export class AuthController {
@@ -63,6 +64,7 @@ export class AuthController {
     await this.authUseCase.logout(command);
 
     const data = new LogoutResponseDto(String(HttpStatus.OK), 'OK');
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { path: '/', expires: new Date(0) });
     res.status(HttpStatus.OK).json(ResultResponseDto.success(data));
   }
 }
