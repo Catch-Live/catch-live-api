@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { StreamingServerClient } from 'src/domain/streamer/client/streaming-server.client';
 import { LiveStreamerResult } from 'src/domain/streamer/result/live-streamer.result';
@@ -7,12 +7,19 @@ import { STREAMER_REPOSITORY, StreamerRepository } from 'src/domain/streamer/str
 import { getNextYouTubeApiKey } from 'src/support/client.util';
 import { YouTubeSearchResponse } from './dto/youtube.dto';
 import { ChzzkLiveStatusResponse } from './dto/chzzk.dto';
+import { ChannelInfo, Platform } from 'src/domain/streamer/streamer.entity';
+import { YouTubeChannelResponse } from './dto/youtube-channel.dto';
+import { RequestCustomException } from 'src/interfaces/controller/common/errors/request-custom-exception';
+import { RequestErrorCode } from 'src/interfaces/controller/common/errors/request-error-code';
+import { ChzzkChannelResponse } from './dto/chzzk-channel.dto';
 
 @Injectable()
 export class StreamingServerCoreClient implements StreamingServerClient {
   constructor(
     @Inject(STREAMER_REPOSITORY) private readonly streamerRepository: StreamerRepository
   ) {}
+
+  private readonly logger = new Logger(StreamingServerCoreClient.name);
 
   async getLiveStreamers(streamers: StreamerWithChannelResult[]): Promise<LiveStreamerResult[]> {
     const asyncJobs = this.createLiveStatusRequests(streamers);
@@ -115,10 +122,10 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       const { platform, channelId } = streamer.channel;
 
       if (platform === 'CHZZK') {
-        const chzzkBaseUrl = process.env.CHZZK_BASE_URL;
+        const CHZZK_BASE_URL = process.env.CHZZK_BASE_URL!;
 
         return axios.get<ChzzkLiveStatusResponse>(
-          `${chzzkBaseUrl}/polling/v2/channels/${channelId}/live-status`
+          `${CHZZK_BASE_URL}/polling/v2/channels/${channelId}/live-status`
         );
       }
 
@@ -148,5 +155,77 @@ export class StreamingServerCoreClient implements StreamingServerClient {
     });
 
     return jobs;
+  }
+
+  async getChannelInfo(channelUrl: string): Promise<ChannelInfo> {
+    const url = new URL(channelUrl);
+    const hostname = url.hostname;
+    const pathname = url.pathname;
+
+    if (hostname.includes('youtube.com')) {
+      if (!pathname.startsWith('/@')) {
+        throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
+      }
+
+      const handle = pathname.slice(1);
+      const response = await this.getYoutubeChannelInfoFromHandle(handle);
+      const items = response.data.items;
+
+      if (!items || items.length === 0) {
+        this.logger.error('YouTube 채널 정보를 찾을 수 없습니다.');
+        throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
+      }
+
+      const {
+        id,
+        snippet: { title },
+      } = items[0];
+
+      return { channelId: id, channelName: title, platform: Platform.YOUTUBE };
+    }
+
+    if (hostname.includes('chzzk.naver.com')) {
+      const channelId = pathname.split('/')[1];
+      if (!channelId) {
+        throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
+      }
+
+      const CHZZK_BASE_URL = process.env.CHZZK_BASE_URL!;
+      const response = await axios.get<ChzzkChannelResponse>(
+        `${CHZZK_BASE_URL}/service/v1/channels/${channelId}`,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+          },
+          timeout: 5000,
+        }
+      );
+      const content = response.data.content;
+
+      if (!content || content.channelId === null) {
+        this.logger.error('CHZZK 채널 정보를 찾을 수 없습니다.');
+        throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
+      }
+
+      return { ...content, platform: Platform.CHZZK };
+    }
+
+    this.logger.error('지원하지 않는 플랫폼입니다.');
+    throw new RequestCustomException(RequestErrorCode.INVALID_CHANNEL_URL);
+  }
+
+  private async getYoutubeChannelInfoFromHandle(handle: string) {
+    const apiKey = getNextYouTubeApiKey();
+    const YOUTUBE_BASE_URL = process.env.YOUTUBE_BASE_URL!;
+    const params = {
+      part: 'snippet',
+      forHandle: handle,
+      key: apiKey,
+    };
+
+    return axios.get<YouTubeChannelResponse>(`${YOUTUBE_BASE_URL}/youtube/v3/channels`, {
+      params,
+    });
   }
 }

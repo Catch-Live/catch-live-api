@@ -11,9 +11,12 @@ export const DomainErrorCode = {
   USER_NOT_FOUND: '3403',
   SUBSCRIPTION_NOT_FOUND: '4401',
   DUPLICATED_SUBSCRIPTION: '4402',
+  SUBSCRIPTION_LIMIT_EXCEEDED: '4403',
 } as const;
 
 export type DomainErrorCode = (typeof DomainErrorCode)[keyof typeof DomainErrorCode];
+
+const SUBSCRIPTION_LIMIT = process.env.SUBSCRIPTION_LIMIT;
 
 export const DomainErrorMessage: Record<DomainErrorCode, string> = {
   [DomainErrorCode.COMMON_ERROR]: '서버에서 요청을 처리할 수 없습니다.',
@@ -28,4 +31,5 @@ export const DomainErrorMessage: Record<DomainErrorCode, string> = {
   [DomainErrorCode.USER_NOT_FOUND]: '사용자를 찾을 수 없습니다.',
   [DomainErrorCode.SUBSCRIPTION_NOT_FOUND]: '구독 정보를 찾을 수 없습니다.',
   [DomainErrorCode.DUPLICATED_SUBSCRIPTION]: '이미 구독 중인 채널이 존재합니다.',
+  [DomainErrorCode.SUBSCRIPTION_LIMIT_EXCEEDED]: `더 이상 채널을 구독할 수 없습니다.(최대 ${SUBSCRIPTION_LIMIT}개)`,
 };
