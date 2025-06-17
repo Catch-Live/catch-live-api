@@ -61,6 +61,10 @@ type RecordJob = {
   title: string;
   streamerId: number;
   retryCount?: number;
+  channelName?: string;
+  subscriptions: {
+    userId: number;
+  }[];
 };
 
 async function init() {
@@ -193,7 +197,7 @@ async function pollJobFromQueues(): Promise<RecordJob | null> {
 }
 
 async function handleJob(job: RecordJob) {
-  const { liveSessionId, streamUrl, title, streamerId } = job;
+  const { liveSessionId, streamUrl, title, streamerId, channelName, subscriptions } = job;
   console.log(`[${WORKER_ID}] 세션 ${liveSessionId} 작업 시작`);
 
   try {
@@ -206,7 +210,14 @@ async function handleJob(job: RecordJob) {
 
     await redis.rpush(
       JOB_DONE_QUEUE_KEY,
-      JSON.stringify({ liveSessionId, streamerId, status: 'COMPLETED', workerId: WORKER_ID })
+      JSON.stringify({
+        liveSessionId,
+        streamerId,
+        status: 'COMPLETED',
+        workerId: WORKER_ID,
+        channelName,
+        subscriptions,
+      })
     );
     console.log(`[${WORKER_ID}] 세션 ${liveSessionId} 녹화 완료`);
   } catch (err) {
@@ -218,7 +229,14 @@ async function handleJob(job: RecordJob) {
     } else {
       await redis.rpush(
         JOB_DONE_QUEUE_KEY,
-        JSON.stringify({ liveSessionId, streamerId, status: 'FAILED', workerId: WORKER_ID })
+        JSON.stringify({
+          liveSessionId,
+          streamerId,
+          status: 'FAILED',
+          workerId: WORKER_ID,
+          channelName,
+          subscriptions,
+        })
       );
     }
   } finally {
@@ -259,7 +277,15 @@ function runStreamlink(url: string, outputPath: string): Promise<void> {
   console.log(`[${WORKER_ID}] Streamlink 실행 - URL: ${url}, 출력: ${outputPath}`);
 
   return new Promise((resolve, reject) => {
-    const p = spawn('streamlink', [url, 'best', '-o', outputPath]);
+    const p = spawn('streamlink', [
+      url,
+      '--default-stream',
+      '720p,best',
+      '--retry-open',
+      '3',
+      '-o',
+      outputPath,
+    ]);
     p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`Exit ${code}`))));
     p.stderr.on('data', (data) => console.error(`[streamlink] ${data}`));
   });

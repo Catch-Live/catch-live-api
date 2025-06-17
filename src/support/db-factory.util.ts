@@ -1,13 +1,23 @@
 import { PrismaClient } from '@prisma/client';
 import { Platform } from 'src/domain/streamer/streamer.entity';
+import { Provider } from 'src/domain/user/user.entity';
 
 const prisma = new PrismaClient();
 
-export const createUser = async ({ nickname, email }: { nickname?: string; email?: string }) => {
+export const createUser = async ({
+  nickname,
+  email,
+  provider,
+}: {
+  nickname?: string;
+  email?: string;
+  provider: Provider;
+}) => {
   const user = await prisma.user.create({
     data: {
       nickname: nickname,
       email: email,
+      provider: provider,
     },
   });
 
@@ -81,4 +91,29 @@ export const createLiveSessionWithRecording = async ({
   });
 
   return liveSession;
+};
+
+export const createNotification = async ({
+  userId,
+  content,
+}: {
+  userId: number;
+  content: string;
+}) => {
+  const notification = await prisma.notification.create({
+    data: {
+      user_id: userId,
+      content: content,
+    },
+  });
+
+  return notification;
+};
+
+export const getUser = async ({ email, provider }: { email: string; provider: Provider }) => {
+  const user = await prisma.user.findUnique({
+    where: { provider_email: { provider, email } },
+  });
+
+  return user;
 };

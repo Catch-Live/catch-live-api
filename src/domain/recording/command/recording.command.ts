@@ -9,13 +9,18 @@ export interface GetRecordingsCommand {
   order: 0 | 1;
   cursor?: string;
   size: number;
+  userId: number;
 }
 
 export interface RecordLiveStreamingCommand {
   platform: Platform;
   channelId: string;
+  channelName: string;
   liveSessionId: number;
   streamerId: number;
   title: string;
   videoId?: string;
+  subscriptions: {
+    userId: number;
+  }[];
 }

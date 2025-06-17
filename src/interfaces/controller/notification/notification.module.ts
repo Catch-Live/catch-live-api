@@ -15,5 +15,6 @@ import { NOTIFICATION_REPOSITORY } from 'src/domain/notification/notification.re
       useClass: NotificationCoreRepository,
     },
   ],
+  exports: [NOTIFICATION_REPOSITORY, NotificationService],
 })
 export class NotificationModule {}

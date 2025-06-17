@@ -50,10 +50,12 @@ describe('RecordingService', () => {
         order: 0,
         cursor: undefined,
         size: 10,
+        userId: 1,
       };
 
       const recordingWithChannelResult: RecordingWithChannelResult = {
         liveSessionId: 1,
+        recordingId: 1,
         title: 'title',
         platform: 'CHZZK',
         liveStatus: 'LIVE',
@@ -90,6 +92,7 @@ describe('RecordingService', () => {
         order: 0,
         cursor: undefined,
         size: 10,
+        userId: 1,
       };
       const error = new Error('DB connection failed');
 
