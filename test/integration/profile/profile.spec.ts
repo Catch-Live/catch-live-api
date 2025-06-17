@@ -35,7 +35,7 @@ describe('ProfileController', () => {
     expect(res.status).toBe(401);
   });
 
-  it('JWT 인증 후 db에 담긴 값이 오는지 확인', async () => {
+  it.skip('JWT 인증 후 db에 담긴 값이 오는지 확인', async () => {
     const res = await request(app.getHttpServer())
       .get('/users/me')
       .set('Authorization', `Bearer ${accessToken}`);

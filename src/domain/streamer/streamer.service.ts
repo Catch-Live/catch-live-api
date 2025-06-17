@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { STREAMER_REPOSITORY, StreamerRepository } from './streamer.repository';
 import { STREAMING_SERVER_CLIENT, StreamingServerClient } from './client/streaming-server.client';
 import { LiveStreamerResult } from './result/live-streamer.result';
-import { StartLiveSessionCommand } from './command/streamer.command';
+import { LiveSessionCommand } from './command/streamer.command';
+import { StreamerWithChannelResult } from './result/streamer-with-channel.result';
+import { ChannelInfo, StreamerEntity } from './streamer.entity';
 
 @Injectable()
 export class StreamerService {
@@ -13,14 +15,27 @@ export class StreamerService {
     private readonly streamingServerClient: StreamingServerClient
   ) {}
 
-  async getLiveStreamers(): Promise<LiveStreamerResult[]> {
-    const streamers = await this.streamerRepository.getStreamers();
-    const liveStreamers = await this.streamingServerClient.getLiveStreamers(streamers);
-
-    return liveStreamers;
+  async getStreamers(): Promise<LiveStreamerResult[]> {
+    return await this.streamerRepository.getStreamers();
   }
 
-  async startLiveSession(command: StartLiveSessionCommand): Promise<void> {
+  async getLiveStreamers(command: StreamerWithChannelResult[]): Promise<LiveStreamerResult[]> {
+    return await this.streamingServerClient.getLiveStreamers(command);
+  }
+
+  async startLiveSession(command: LiveSessionCommand): Promise<void> {
     await this.streamerRepository.startLiveSession(command);
+  }
+
+  async getChannelInfo(channelUrl: string) {
+    return await this.streamingServerClient.getChannelInfo(channelUrl);
+  }
+
+  async getStreamerByChannelId(channelId: string) {
+    return await this.streamerRepository.getStreamerByChannelId(channelId);
+  }
+
+  async createStreamer(channelInfo: ChannelInfo): Promise<StreamerEntity> {
+    return await this.streamerRepository.createStreamer(channelInfo);
   }
 }

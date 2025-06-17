@@ -17,3 +17,9 @@ export const Platform = {
 } as const;
 
 export type Platform = (typeof Platform)[keyof typeof Platform];
+
+export type ChannelInfo = {
+  channelId: string;
+  channelName: string;
+  platform: Platform;
+};

@@ -2,7 +2,7 @@ import { Cron } from '@nestjs/schedule';
 import axios from 'axios';
 
 export class HealthCheckScheduler {
-  @Cron('*/60 * * * * *') //  1분 마다 헬스체크 진행
+  @Cron('*/30 * * * * *') //  30초 마다 헬스체크 진행
   async healthCheck() {
     try {
       const monitoringUrl = process.env.MONITORING_BASE_URL;

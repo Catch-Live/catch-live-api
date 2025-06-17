@@ -13,17 +13,14 @@ import { Request } from 'express';
 import { LogoutRequestDto } from 'src/interfaces/controller/auth/dto/logout.request.dto';
 import { LogoutResponseDto } from './dto/logout.response.dto';
 import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
+import { SignupDto } from './dto/auth.signup.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authUseCase: AuthUseCase) {}
 
   @Post('login')
-  async login(
-    @Body()
-    socialLoginDto: SocialLoginDto,
-    @Res({ passthrough: true }) res: Response
-  ): Promise<void> {
+  async login(@Body() socialLoginDto: SocialLoginDto, @Res() res: Response): Promise<void> {
     const command = socialLoginDto.toCommand();
     const result = await this.authUseCase.loginWithSocial(command);
 
@@ -44,6 +41,14 @@ export class AuthController {
       })
       .status(HttpStatus.OK)
       .json(ResultResponseDto.success({ needSignup: false, accessToken }));
+  }
+
+  @Post('signup')
+  async signup(@Body() signupDto: SignupDto, @Res() res: Response) {
+    const command = signupDto.toCommand();
+    await this.authUseCase.signup(command);
+
+    res.status(HttpStatus.CREATED).json(ResultResponseDto.success());
   }
 
   @UseGuards(JwtAuthGuard)
