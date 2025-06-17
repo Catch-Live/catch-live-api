@@ -126,24 +126,28 @@ export class UserCoreRepository implements UserRepository {
 
   async signout(requestDto: UserRequestCommand) {
     await this.prisma.$transaction(async (prisma) => {
-      const rawData = await prisma.user.updateMany({
+      const signoutUser = await prisma.user.update({
         where: {
           user_id: requestDto.userId,
-          email: requestDto.email,
           is_deleted: false,
         },
         data: { is_deleted: true, updated_at: new Date() },
       });
-      if (rawData.count === 0 || rawData.count > 1) {
+      if (!signoutUser) {
+        throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+      }
+
+      const signoutToken = await this.prisma.token.update({
+        where: {
+          user_id: requestDto.userId,
+        },
+        data: { refresh_token: '', updated_at: new Date() },
+      });
+      if (!signoutToken) {
         throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
       }
     });
-    await this.prisma.token.updateMany({
-      where: {
-        user_id: requestDto.userId,
-      },
-      data: { refresh_token: '', updated_at: new Date() },
-    });
+
     return true;
   }
 }

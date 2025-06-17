@@ -1,4 +1,4 @@
-import { IsIn, IsNumber, IsEmail } from 'class-validator';
+import { IsIn, IsNumber } from 'class-validator';
 import { Provider } from 'src/domain/user/user.entity';
 export { Provider };
 
@@ -8,7 +8,4 @@ export class UserRequestCommand {
 
   @IsIn(Object.values(Provider))
   provider: Provider;
-
-  @IsEmail()
-  readonly email: string;
 }
