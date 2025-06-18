@@ -1,0 +1,16 @@
+version: '3'
+services:
+  main:
+    image: <ECR_MAIN_IMAGE_URL>
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+  monitor:
+    image: <ECR_MONITOR_IMAGE_URL>
+    expose:
+      - '3001'
+  worker1:
+    image: <ECR_WORKER1_IMAGE_URL>
+  worker2:
+    image: <ECR_WORKER2_IMAGE_URL>

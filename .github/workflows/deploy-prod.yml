@@ -32,7 +32,9 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
 
       - name: Build & Push Main Image
         run: |
@@ -54,19 +56,19 @@ jobs:
           docker build -f docker/worker2.Dockerfile -t $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG
 
-      - name: Replace image URIs in Dockerrun.aws.json
+      - name: Generate docker-compose.yml
         run: |
-          sed -i "s|<ECR_MAIN_IMAGE_URL>|$ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG|g" Dockerrun.aws.json
-          sed -i "s|<ECR_MONITOR_IMAGE_URL>|$ECR_REGISTRY/$ECR_MONITOR:$IMAGE_TAG|g" Dockerrun.aws.json
-          sed -i "s|<ECR_WORKER1_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER1:$IMAGE_TAG|g" Dockerrun.aws.json
-          sed -i "s|<ECR_WORKER2_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG|g" Dockerrun.aws.json
+          sed "s|<ECR_MAIN_IMAGE_URL>|$ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG|g" docker-compose.template.yml |
+          sed "s|<ECR_MONITOR_IMAGE_URL>|$ECR_REGISTRY/$ECR_MONITOR:$IMAGE_TAG|g" |
+          sed "s|<ECR_WORKER1_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER1:$IMAGE_TAG|g" |
+          sed "s|<ECR_WORKER2_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG|g" > docker-compose.yml
 
       - name: Zip and Upload to S3
         run: |
-          zip -r deploy.zip Dockerrun.aws.json .ebextensions
+          zip -r deploy.zip docker-compose.yml .ebextensions
           aws s3 cp deploy.zip s3://catch-live-eb/deploy.zip
 
-      - name: Deploy to Beanstalk
+      - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name catch-live-backend \
