@@ -6,6 +6,7 @@ import { CACHE_SERVICE, CacheService } from 'src/domain/common/cache/cache.servi
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
 import { NotificationService } from 'src/domain/notification/notification.service';
 import { Transactional } from 'src/infrastructure/prisma/transactional.decorator';
+import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 @Injectable()
 export class MonitoringUseCase implements OnModuleInit {
@@ -16,8 +17,8 @@ export class MonitoringUseCase implements OnModuleInit {
     @Inject(CACHE_SERVICE) private readonly cacheService: CacheService
   ) {}
 
-  private readonly IS_CHANGED_KEY = process.env.IS_CHANGED_KEY || 'monitoring:isChanged';
-  private readonly STREAMERS_KEY = process.env.STREAMERS_KEY || 'monitoring:streamers';
+  private readonly IS_CHANGED_KEY = REDIS_KEY.MONITORING_IS_CHANGED;
+  private readonly STREAMERS_KEY = REDIS_KEY.MONITORING_STREAMERS;
 
   async onModuleInit() {
     const isChanged = await this.cacheService.get(this.IS_CHANGED_KEY);

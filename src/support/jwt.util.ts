@@ -3,6 +3,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { LoginToken } from 'src/domain/auth/login-token';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
+import { JWT_CONFIG } from './constants';
 
 @Injectable()
 export class JwtUtil {
@@ -15,17 +16,13 @@ export class JwtUtil {
   }
 
   generateAccessToken(subject: JwtPayload): string {
-    return this.createToken(
-      subject,
-      process.env.JWT_ACCESS_EXPIRES_IN!,
-      process.env.JWT_ACCESS_SECRET!
-    );
+    return this.createToken(subject, JWT_CONFIG.ACCESS.EXPIRES_IN, process.env.JWT_ACCESS_SECRET!);
   }
 
   generateRefreshToken(subject: JwtPayload): string {
     return this.createToken(
       subject,
-      process.env.JWT_REFRESH_EXPIRES_IN!,
+      JWT_CONFIG.REFRESH.EXPIRES_IN,
       process.env.JWT_REFRESH_SECRET!
     );
   }
