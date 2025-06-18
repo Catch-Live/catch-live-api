@@ -4,6 +4,7 @@ export interface StreamerWithChannelResult {
   streamerId: number;
   channel: ChannelResult;
   createdAt: Date;
+  isLive: boolean;
   subscriptions: {
     userId: number;
   }[];

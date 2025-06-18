@@ -7,17 +7,18 @@ import { Prisma } from '@prisma/client';
 import { LiveSessionEntity } from 'src/domain/recording/live-session.entity';
 import { RecordingEntity } from 'src/domain/recording/recording.entity';
 import { CreateLiveSessionCommand } from 'src/domain/recording/command/live-session.command';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class RecordingCoreRepository implements RecordingRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getRecordings(
     query: GetRecordingsCommand
   ): Promise<{ data: RecordingWithChannelResult[]; nextCursor: string | null }> {
     const { q, recordingStatuses, platforms, sortBy, order, cursor, size, userId } = query;
     const sortOrder = order === 1 ? 'asc' : 'desc';
-    const where: Prisma.VSubscribedSessionWhereInput = {
+    const where: Prisma.vSubscribedSessionsWhereInput = {
       ...(q && {
         OR: [{ title: { contains: q } }, { channel_name: { contains: q } }],
       }),
@@ -30,7 +31,7 @@ export class RecordingCoreRepository implements RecordingRepository {
       user_id: userId,
     };
 
-    const queryResult = await this.prisma.vSubscribedSession.findMany({
+    const queryResult = await this.prisma.vSubscribedSessions.findMany({
       where,
       take: size + 1,
       orderBy: {
@@ -38,13 +39,14 @@ export class RecordingCoreRepository implements RecordingRepository {
       },
       ...(cursor && {
         cursor: {
-          live_session_id: BigInt(cursor),
+          recording_id: BigInt(cursor),
         },
+        skip: 1,
       }),
     });
 
     const nextItem = queryResult.length > size ? queryResult.pop() : null;
-    const nextCursor = nextItem ? nextItem.live_session_id.toString() : null;
+    const nextCursor = nextItem ? nextItem.recording_id.toString() : null;
     const data = queryResult.map((record) => {
       return {
         liveSessionId: Number(record.live_session_id),
@@ -129,5 +131,9 @@ export class RecordingCoreRepository implements RecordingRepository {
         ended_at: new Date(),
       },
     });
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
   }
 }

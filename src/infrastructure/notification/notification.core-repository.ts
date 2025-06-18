@@ -6,10 +6,11 @@ import {
   CreateNotificationsCommand,
   NotificationRequestCommand,
 } from 'src/domain/notification/command/notification.command';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class NotificationCoreRepository implements NotificationRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findMany(args: NotificationRequestCommand) {
     let query = {};
@@ -42,5 +43,9 @@ export class NotificationCoreRepository implements NotificationRepository {
         content,
       })),
     });
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
   }
 }

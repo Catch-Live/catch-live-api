@@ -38,6 +38,6 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(cookieParser());
   app.set('trust proxy', true);
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.MAIN_PORT ?? 3000);
 }
 bootstrap();

@@ -8,10 +8,11 @@ import { SignupCommand } from 'src/domain/auth/command/signup.command';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 import { UserRequestCommand } from 'src/domain/user/user.command';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class UserCoreRepository implements UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findByProviderAndEmail(provider: Provider, email: string): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
@@ -191,5 +192,9 @@ export class UserCoreRepository implements UserRepository {
     } catch {
       throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
     }
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
   }
 }

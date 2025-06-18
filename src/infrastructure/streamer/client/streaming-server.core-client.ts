@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { StreamingServerClient } from 'src/domain/streamer/client/streaming-server.client';
 import { LiveStreamerResult } from 'src/domain/streamer/result/live-streamer.result';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
-import { STREAMER_REPOSITORY, StreamerRepository } from 'src/domain/streamer/streamer.repository';
 import { getNextYouTubeApiKey } from 'src/support/client.util';
 import { YouTubeSearchResponse } from './dto/youtube.dto';
 import { ChzzkLiveStatusResponse } from './dto/chzzk.dto';
@@ -15,10 +14,6 @@ import { ChzzkChannelResponse } from './dto/chzzk-channel.dto';
 
 @Injectable()
 export class StreamingServerCoreClient implements StreamingServerClient {
-  constructor(
-    @Inject(STREAMER_REPOSITORY) private readonly streamerRepository: StreamerRepository
-  ) {}
-
   private readonly logger = new Logger(StreamingServerCoreClient.name);
 
   async getLiveStreamers(streamers: StreamerWithChannelResult[]): Promise<LiveStreamerResult[]> {
@@ -40,10 +35,10 @@ export class StreamingServerCoreClient implements StreamingServerClient {
     return parsedResults.filter((result): result is LiveStreamerResult => !!result);
   }
 
-  private async parseLiveStatusResponse(
+  private parseLiveStatusResponse(
     data: YouTubeSearchResponse | ChzzkLiveStatusResponse,
     streamers: StreamerWithChannelResult[]
-  ): Promise<LiveStreamerResult | undefined> {
+  ): LiveStreamerResult | undefined {
     if (this.isYouTubeResponse(data)) {
       return this.extractYouTubeLiveInfo(data, streamers);
     }
@@ -53,21 +48,13 @@ export class StreamingServerCoreClient implements StreamingServerClient {
     return undefined;
   }
 
-  private async extractYouTubeLiveInfo(
+  private extractYouTubeLiveInfo(
     data: YouTubeSearchResponse,
     streamers: StreamerWithChannelResult[]
-  ): Promise<LiveStreamerResult | undefined> {
-    const liveItem = data.items.find((item) => item.liveStreamingDetails);
+  ): LiveStreamerResult | undefined {
+    const liveItem = data.items.find((item) => item.snippet.liveBroadcastContent === 'live');
 
     if (!liveItem) {
-      const videoId = data.items[0]?.id;
-      const streamer = streamers.find((s) => s.channel.videoId === videoId);
-
-      if (!streamer) {
-        return;
-      }
-
-      await this.streamerRepository.clearVideoInfo(streamer?.streamerId);
       return;
     }
 
@@ -83,6 +70,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       subscriptions: [...streamer.subscriptions],
       title: liveItem.snippet.title,
       videoId: liveItem.id,
+      isLive: streamer.isLive,
     };
   }
 
@@ -106,6 +94,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
       createdAt: streamer.createdAt,
       subscriptions: streamer.subscriptions && [...streamer.subscriptions],
       title: liveTitle,
+      isLive: streamer.isLive,
     };
   }
 
@@ -146,7 +135,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
         const youtubeKey = getNextYouTubeApiKey();
         const params = {
           key: youtubeKey,
-          part: 'snippet,liveStreamingDetails',
+          part: 'snippet',
           id: videoId,
         };
 

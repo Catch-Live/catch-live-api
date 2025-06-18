@@ -5,6 +5,7 @@ export interface YouTubeSearchResponse {
     snippet: {
       channelId: string;
       title: string;
+      liveBroadcastContent?: string;
     };
     liveStreamingDetails: {
       actualStartTime: string;
