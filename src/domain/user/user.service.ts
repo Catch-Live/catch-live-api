@@ -24,15 +24,27 @@ export class UserService {
   }
 
   async signup(command: SignupCommand): Promise<void> {
-    const nickname = await this.userRepository.findByNickname(command.nickname);
+    const { email, nickname, provider } = command;
 
-    if (nickname) {
+    const existNickname = await this.userRepository.findByNickname(nickname);
+
+    if (existNickname) {
       throw new DomainCustomException(HttpStatus.CONFLICT, DomainErrorCode.DUPLICATED_NICKNAME);
     }
 
-    const userId = await this.userRepository.createUser(command);
+    const user = await this.userRepository.findByProviderAndEmail(provider, email);
 
-    await this.userRepository.createToken(userId);
+    if (!user) {
+      const userId = await this.userRepository.createUser(command);
+      await this.userRepository.upsertToken(userId);
+      return;
+    }
+
+    if (user.isDeleted) {
+      await this.userRepository.restoreUser(user.userId, command);
+      await this.userRepository.upsertToken(user.userId);
+      return;
+    }
   }
 
   async compareWithStoredRefreshToken(refreshToken: string, userId: number) {

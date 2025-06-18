@@ -4,7 +4,6 @@ import { SignupCommand } from 'src/domain/auth/command/signup.command';
 import { SocialLoginCommand } from 'src/domain/auth/command/social-login.command';
 import { LoginToken } from 'src/domain/auth/login-token';
 import { NeedSignupResponse } from 'src/domain/auth/need-signup.response';
-import { UserEntity } from 'src/domain/user/user.entity';
 import { UserService } from 'src/domain/user/user.service';
 import { Transactional } from 'src/infrastructure/prisma/transactional.decorator';
 import { JwtUtil } from 'src/support/jwt.util';
@@ -29,12 +28,9 @@ export class AuthUseCase {
 
     const userInfo = await this.authService.getOauthUserInfo(provider, accessToken);
 
-    const user: UserEntity | null = await this.userService.getUserByProviderAndEmail(
-      provider,
-      userInfo.email
-    );
+    const user = await this.userService.getUserByProviderAndEmail(provider, userInfo.email);
 
-    if (!user) {
+    if (!user || user.isDeleted) {
       return {
         needSignup: true,
         user: {

@@ -11,8 +11,9 @@ export interface UserRepository {
   findTokenById(userId: number): Promise<TokenEntity | null>;
   updateRefreshToken(userId: number, refreshToken: string): Promise<TokenEntity>;
   createUser(command: SignupCommand): Promise<number>;
-  createToken(userId: number): Promise<void>;
+  upsertToken(userId: number): Promise<void>;
   findByNickname(nickname: string): Promise<UserEntity | null>;
   signout(command: UserRequestCommand): Promise<boolean>;
   logout(requestCommand: LogoutRequestCommand): Promise<UserEntity>;
+  restoreUser(userId: number, command: SignupCommand): Promise<void>;
 }
