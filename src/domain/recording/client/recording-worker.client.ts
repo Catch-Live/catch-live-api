@@ -5,6 +5,10 @@ export interface RecordingWorkerClient {
     streamUrl: string,
     liveSessionId: number,
     title: string,
-    streamerId: number
+    streamerId: number,
+    channelName: string,
+    subscriptions: {
+      userId: number;
+    }[]
   ): Promise<void>;
 }

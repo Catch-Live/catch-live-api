@@ -54,4 +54,16 @@ export class AuthUseCase {
   async signup(command: SignupCommand): Promise<void> {
     await this.userService.signup(command);
   }
+
+  async refresh(refreshToken: string) {
+    this.jwtUtil.verifyRefreshToken(refreshToken);
+
+    const { userId, provider } = this.jwtUtil.decode(refreshToken);
+
+    await this.userService.compareWithStoredRefreshToken(refreshToken, userId);
+
+    const accessToken = this.jwtUtil.generateAccessToken({ userId, provider });
+
+    return { accessToken };
+  }
 }

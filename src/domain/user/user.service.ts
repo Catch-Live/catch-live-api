@@ -1,8 +1,6 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { Provider, UserEntity } from './user.entity';
 import { USER_REPOSITORY, UserRepository } from './user.repository';
-import { hash } from 'bcrypt';
-import { BCRYPT_ROUNDS } from 'src/support/constants';
 import { SignupCommand } from '../auth/command/signup.command';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
@@ -15,14 +13,14 @@ export class UserService {
     private readonly userRepository: UserRepository
   ) {}
 
+  private readonly logger = new Logger(UserService.name);
+
   getUserByProviderAndEmail(provider: Provider, email: string): Promise<UserEntity | null> {
     return this.userRepository.findByProviderAndEmail(provider, email);
   }
 
   async saveRefreshToken(userId: number, refreshToken: string) {
-    const hashedToken = await hash(refreshToken, BCRYPT_ROUNDS);
-
-    return this.userRepository.updateRefreshToken(userId, hashedToken);
+    return this.userRepository.updateRefreshToken(userId, refreshToken);
   }
 
   async signup(command: SignupCommand): Promise<void> {
@@ -35,6 +33,17 @@ export class UserService {
     const userId = await this.userRepository.createUser(command);
 
     await this.userRepository.createToken(userId);
+  }
+
+  async compareWithStoredRefreshToken(refreshToken: string, userId: number) {
+    const userToken = await this.userRepository.findTokenById(userId);
+
+    if (userToken === null) {
+      this.logger.error('DB 토큰 정보 없음');
+      throw new DomainCustomException(HttpStatus.UNAUTHORIZED, DomainErrorCode.UNAUTHORIZED);
+    }
+
+    userToken.compare(refreshToken);
   }
 
   async signout(command: UserRequestCommand) {

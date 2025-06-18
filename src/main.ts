@@ -7,6 +7,7 @@ import { RequestErrorCode } from './interfaces/controller/common/errors/request-
 import { RequestCustomException } from './interfaces/controller/common/errors/request-custom-exception';
 import { HttpExceptionFilter } from './interfaces/controller/common/filters/http-exception.filter';
 import { FieldConstraintErrorMap } from './interfaces/controller/common/dto/field-error-map';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -35,6 +36,7 @@ async function bootstrap() {
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(cookieParser());
   app.set('trust proxy', true);
   await app.listen(process.env.PORT ?? 3000);
 }

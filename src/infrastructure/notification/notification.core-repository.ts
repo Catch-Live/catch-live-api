@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { NotificationRepository } from 'src/domain/notification/notification.repository';
 import { NotificationResponseEntity } from 'src/domain/notification/entity/notification.entity';
-import { NotificationRequestCommand } from 'src/domain/notification/command/notification.command';
+import {
+  CreateNotificationsCommand,
+  NotificationRequestCommand,
+} from 'src/domain/notification/command/notification.command';
 
 @Injectable()
 export class NotificationCoreRepository implements NotificationRepository {
@@ -29,5 +32,15 @@ export class NotificationCoreRepository implements NotificationRepository {
     });
 
     return result;
+  }
+  async createNotifications(query: CreateNotificationsCommand): Promise<void> {
+    const { subscriptions, content } = query;
+
+    await this.prisma.notification.createMany({
+      data: subscriptions.map((sub) => ({
+        user_id: sub.userId,
+        content,
+      })),
+    });
   }
 }

@@ -10,31 +10,43 @@ import {
   createStreamer,
   createSubscription,
   createUser,
-} from 'src/support/recording-factory.util';
+} from 'src/support/db-factory.util';
 import { GetRecordingsRequestDto } from 'src/interfaces/controller/recording/dto/recording.request.dto';
+import { JwtUtil } from 'src/support/jwt.util';
 
 describe('RecordingController (e2e) with real MySQL', () => {
   let app: INestApplication<App>;
   let streamer: Streamer;
+  let jwtUtil: JwtUtil;
+  let accessToken: string;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    jwtUtil = moduleFixture.get<JwtUtil>(JwtUtil);
 
+    app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
       })
     );
-
     await app.init();
   });
 
   beforeEach(async () => {
     await resetDatabase();
-    const user = await createUser({ nickname: 'user123' });
+    const user = await createUser({
+      nickname: 'user123',
+      email: 'abcd@naver.com',
+      provider: 'KAKAO',
+    });
+    accessToken = jwtUtil.generateAccessToken({
+      userId: Number(user.user_id),
+      provider: user.provider!,
+    });
     streamer = await createStreamer({
       platform: 'CHZZK',
       channel_id: 'd7ddd7585',
@@ -60,11 +72,16 @@ describe('RecordingController (e2e) with real MySQL', () => {
         channelName: '경제 상식',
         title: '경제 한마당 시작!',
       });
+
       // when
-      const res = await request(app.getHttpServer()).get('/recordings').expect(200);
+      const res = await request(app.getHttpServer())
+        .get('/recordings')
+        .set('Authorization', `Bearer ${accessToken}`);
 
       // then
-      expect(res.body.message).toBe('OK');
+      expect(res.status).toBe(200);
+      expect(res.body.code).toBe('0000');
+      expect(res.body.message).toBe('SUCCESS');
       expect(Array.isArray(res.body.data.recordings)).toBe(true);
       expect(res.body.data.recordings.length).toBe(1);
     });
@@ -89,14 +106,20 @@ describe('RecordingController (e2e) with real MySQL', () => {
         channelName: '경제 상식',
         title: '한국 경제...',
       });
+
       const getRecordingsDto = new GetRecordingsRequestDto();
       getRecordingsDto.q = '여행';
 
       // when
-      const res = await request(app.getHttpServer()).get('/recordings').query(getRecordingsDto);
+      const res = await request(app.getHttpServer())
+        .get('/recordings')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .query(getRecordingsDto);
 
       // then
       expect(res.status).toBe(200);
+      expect(res.body.code).toBe('0000');
+      expect(res.body.message).toBe('SUCCESS');
       expect(Array.isArray(res.body.data.recordings)).toBe(true);
       expect(res.body.data.recordings.length).toBe(1);
       // 반환된 모든 녹화의 제목에 '뮤비'가 포함되어야 함

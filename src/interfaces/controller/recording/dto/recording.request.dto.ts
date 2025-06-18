@@ -39,7 +39,7 @@ export class GetRecordingsRequestDto {
   @Min(1)
   size?: number = 10;
 
-  toCommand(): GetRecordingsCommand {
+  toCommand(userId: number): GetRecordingsCommand {
     return {
       q: this.q,
       recordingStatuses: this.recordingStatuses,
@@ -48,6 +48,7 @@ export class GetRecordingsRequestDto {
       order: this.order ?? 0,
       cursor: this.cursor,
       size: this.size ?? 10,
+      userId: userId,
     };
   }
 }
