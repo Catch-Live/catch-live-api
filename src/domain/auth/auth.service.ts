@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Provider } from 'src/domain/user/user.entity';
 import { SocialLoginFactory } from './strategy/social-login.factory';
+import { USER_REPOSITORY, UserRepository } from '../user/user.repository';
+import { LogoutRequestCommand } from './command/logout.command';
+import { LogoutResponseResult } from './result/logout.response.result';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly socialLoginFactory: SocialLoginFactory) {}
+  constructor(
+    private readonly socialLoginFactory: SocialLoginFactory,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: UserRepository
+  ) {}
 
   async getOauthAccessToken(
     provider: Provider,
@@ -18,5 +25,10 @@ export class AuthService {
   async getOauthUserInfo(provider: Provider, accessToken: string): Promise<{ email: string }> {
     const strategy = this.socialLoginFactory.findByProvider(provider);
     return await strategy.getUserInfo(accessToken);
+  }
+
+  async logout(requestCommand: LogoutRequestCommand) {
+    await this.userRepository.logout(requestCommand);
+    return new LogoutResponseResult(true);
   }
 }

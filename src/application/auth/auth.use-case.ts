@@ -7,6 +7,7 @@ import { NeedSignupResponse } from 'src/domain/auth/need-signup.response';
 import { UserEntity } from 'src/domain/user/user.entity';
 import { UserService } from 'src/domain/user/user.service';
 import { JwtUtil } from 'src/support/jwt.util';
+import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 
 @Injectable()
 export class AuthUseCase {
@@ -53,6 +54,10 @@ export class AuthUseCase {
 
   async signup(command: SignupCommand): Promise<void> {
     await this.userService.signup(command);
+  }
+
+  async logout(requestCommand: LogoutRequestCommand) {
+    return await this.authService.logout(requestCommand);
   }
 
   async refresh(refreshToken: string) {

@@ -3,6 +3,7 @@ import { Provider, UserEntity } from 'src/domain/user/user.entity';
 import { UserRepository } from 'src/domain/user/user.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenEntity } from 'src/domain/user/token.entity';
+import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 import { SignupCommand } from 'src/domain/auth/command/signup.command';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
@@ -159,5 +160,36 @@ export class UserCoreRepository implements UserRepository {
     });
 
     return true;
+  }
+
+  async logout(requestCommand: LogoutRequestCommand) {
+    try {
+      const entity = await this.prisma.$transaction(async (prisma) => {
+        const queryData = await prisma.token.update({
+          where: {
+            user_id: requestCommand.userId,
+          },
+          data: { refresh_token: '', updated_at: new Date() },
+        });
+
+        if (!queryData) {
+          throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+        }
+
+        return new UserEntity(
+          requestCommand.userId,
+          '',
+          '',
+          Provider.GOOGLE,
+          true,
+          new Date(),
+          new Date()
+        );
+      });
+
+      return entity;
+    } catch {
+      throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+    }
   }
 }
