@@ -4,10 +4,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
 import { LiveSessionCommand } from 'src/domain/streamer/command/streamer.command';
 import { ChannelInfo, StreamerEntity } from 'src/domain/streamer/streamer.entity';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class StreamerCoreRepository implements StreamerRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getStreamerByChannelId(channelId: string): Promise<StreamerEntity | null> {
     const streamer = await this.prisma.streamer.findUnique({
@@ -32,7 +33,6 @@ export class StreamerCoreRepository implements StreamerRepository {
   async getStreamers(): Promise<StreamerWithChannelResult[]> {
     const queryResult = await this.prisma.streamer.findMany({
       where: {
-        is_live: false,
         subscriptions: {
           some: {
             is_connected: true,
@@ -46,6 +46,7 @@ export class StreamerCoreRepository implements StreamerRepository {
         channel_name: true,
         video_id: true,
         created_at: true,
+        is_live: true,
         subscriptions: {
           where: {
             is_connected: true,
@@ -60,6 +61,7 @@ export class StreamerCoreRepository implements StreamerRepository {
     return queryResult.map((streamer) => ({
       streamerId: Number(streamer.streamer_id),
       createdAt: streamer.created_at,
+      isLive: streamer.is_live!,
       channel: {
         platform: streamer.platform,
         channelId: streamer.channel_id,
@@ -120,5 +122,9 @@ export class StreamerCoreRepository implements StreamerRepository {
       streamer.updated_at,
       streamer.video_id
     );
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
   }
 }

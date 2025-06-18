@@ -247,9 +247,10 @@ async function handleJob(job: RecordJob) {
 }
 
 async function createRecording(liveSessionId: number): Promise<number> {
+  const utcDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
   const [result] = await pool.execute<mysql.ResultSetHeader>(
-    'INSERT INTO recording (live_session_id, status) VALUES (?, ?)',
-    [liveSessionId, 'RECORDING']
+    'INSERT INTO recording (live_session_id, status, started_at) VALUES (?, ?, ?)',
+    [liveSessionId, 'RECORDING', utcDate]
   );
   console.log(`[${WORKER_ID}] 녹화 생성 완료 - 세션 ${liveSessionId}, ID ${result.insertId}`);
   return result.insertId;
@@ -279,9 +280,10 @@ function runStreamlink(url: string, outputPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const p = spawn('streamlink', [
       url,
-      '--default-stream',
       '720p,best',
       '--retry-open',
+      '3',
+      '--retry-streams',
       '3',
       '-o',
       outputPath,
@@ -299,8 +301,9 @@ async function uploadToS3(filePath: string, title: string, key: string): Promise
 }
 
 async function completeRecording(id: number, url: string) {
+  const utcDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
   await pool.execute(
     'UPDATE recording SET video_url=?, status=?, completed_at=? WHERE recording_id=?',
-    [url, 'COMPLETED', new Date(), id]
+    [url, 'COMPLETED', utcDate, id]
   );
 }

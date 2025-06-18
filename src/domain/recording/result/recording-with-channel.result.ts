@@ -1,13 +1,13 @@
 import { Platform } from 'src/domain/streamer/streamer.entity';
 import { RecordingStatus } from '../recording.entity';
-import { LiveStatus } from '@prisma/client';
+import { LiveSessionStatus } from '../live-session.entity';
 
 export interface RecordingWithChannelResult {
   liveSessionId: number;
   recordingId: number;
   title: string;
   platform: Platform;
-  liveStatus: LiveStatus;
+  liveStatus: LiveSessionStatus;
   videoUrl: string;
   startedAt: Date | null;
   completedAt: Date | null;

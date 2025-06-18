@@ -6,6 +6,7 @@ export interface LiveStreamerResult {
   createdAt?: Date;
   title?: string;
   videoId?: string;
+  isLive: boolean;
   subscriptions: {
     userId: number;
   }[];

@@ -15,6 +15,7 @@ import {
   NOTIFICATION_REPOSITORY,
   NotificationRepository,
 } from 'src/domain/notification/notification.repository';
+import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
 
 /**
  * RecordingWorkerCoreClient
@@ -49,6 +50,7 @@ export class RecordingWorkerCoreClient
   private readonly JOB_FAIL_QUEUE = process.env.JOB_FAIL_QUEUE!;
   private readonly HEARTBEAT_KEY = process.env.HEARTBEAT_KEY!;
   private readonly RECORDING_SET_PREFIX = process.env.RECORDING_SET_PREFIX!;
+  private readonly STREAMERS_KEY = process.env.STREAMERS_KEY!;
   private doneJobPollInterval: NodeJS.Timeout | null = null;
   private failoverCheckInterval: NodeJS.Timeout | null = null;
   private readonly failedWorkerSet = new Set<string>();
@@ -149,8 +151,13 @@ export class RecordingWorkerCoreClient
     }[]
   ) {
     this.logger.log(`녹화 완료 처리 시작 - 세션 ${liveSessionId}`);
+    // 녹화 영상 완료
     await this.recordingRepository.completeLiveSession(liveSessionId);
+    // 스트리머 라이브 종료
     await this.streamerRepository.endLiveSession({ streamerId, isLive: false });
+    // cached 된 스트리머 목록에서 해당 스트리머 라이브 종료 상태로 변경
+    await this.changeStreamerAsOffline(streamerId);
+    // 라이브가 끝났다는 알림 발송
     await this.notificationRepository.createNotifications({
       subscriptions: subscriptions,
       content: `⚪️ 스트리머 '${channelName}'님의 라이브 녹화가 종료되었습니다.`,
@@ -167,15 +174,29 @@ export class RecordingWorkerCoreClient
     }[]
   ) {
     this.logger.warn(`녹화 실패 처리됨 - 세션 ${liveSessionId}`);
+    // 녹화 영상 실패
     await this.recordingRepository.failLiveSession(liveSessionId);
+    // 스트리머 라이브 종료
     await this.streamerRepository.endLiveSession({ streamerId, isLive: false });
+    // cached 된 스트리머 목록에서 해당 스트리머 라이브 종료 상태로 변경
+    await this.changeStreamerAsOffline(streamerId);
+    // 라이브가 끝났다는 알림 발송
     await this.notificationRepository.createNotifications({
       subscriptions: subscriptions,
-      content: `⚪️ 스트리머 ${channelName}님의 라이브 녹화가 종료되었습니다.`,
+      content: `⚪️ 스트리머 '${channelName}'님의 라이브 녹화가 종료되었습니다.`,
     });
     this.logger.log(`DB 업데이트 완료 - 세션 ${liveSessionId}`);
   }
 
+  private async changeStreamerAsOffline(streamerId: number) {
+    const cached = await this.cacheService.get(this.STREAMERS_KEY);
+    let cachedData: StreamerWithChannelResult[] = cached
+      ? (JSON.parse(cached) as StreamerWithChannelResult[])
+      : [];
+
+    cachedData = cachedData.map((s) => (s.streamerId === streamerId ? { ...s, isLive: false } : s));
+    await this.cacheService.set(this.STREAMERS_KEY, JSON.stringify(cachedData));
+  }
   private startFailoverDetection() {
     this.failoverCheckInterval = setInterval(() => {
       void (async () => {
@@ -194,6 +215,7 @@ export class RecordingWorkerCoreClient
           const allRecordingKeys = await this.cacheService.getKeys(
             `${this.RECORDING_SET_PREFIX}:*`
           );
+
           for (const key of allRecordingKeys) {
             const workerId = key.split(':').pop();
             if (!workerId) continue;
@@ -222,6 +244,7 @@ export class RecordingWorkerCoreClient
 
   private async confirmFailover(workerId: string, key: string) {
     const ttl = await this.cacheService.getTTL(`${this.HEARTBEAT_KEY}:${workerId}`);
+
     if (ttl > 0) {
       this.logger.log(`${workerId} 살아있음. 장애 조치 취소.`);
       this.failedWorkerSet.delete(workerId);
@@ -239,6 +262,7 @@ export class RecordingWorkerCoreClient
       if (!jobJson) continue;
 
       const job = JSON.parse(jobJson) as RecordPayload;
+
       if ((job.retryCount ?? 0) < 1) {
         job.retryCount = 1;
         await this.cacheService.zadd(this.JOB_FAIL_QUEUE, Date.now(), JSON.stringify(job));
