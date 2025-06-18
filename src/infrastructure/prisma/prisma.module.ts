@@ -1,7 +1,11 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Inject, Module } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { PrismaTransactionManager } from './prisma.transaction-manager';
-import { TRANSACTION_MANAGER } from 'src/application/common/transaction-manager';
+import {
+  TRANSACTION_MANAGER,
+  TransactionManager,
+} from 'src/application/common/transaction-manager';
+import { registerGlobalTransactionManager } from './transactional.decorator';
 
 @Global()
 @Module({
@@ -14,4 +18,11 @@ import { TRANSACTION_MANAGER } from 'src/application/common/transaction-manager'
   ],
   exports: [PrismaService, TRANSACTION_MANAGER],
 })
-export class PrismaModule {}
+export class PrismaModule {
+  constructor(
+    @Inject(TRANSACTION_MANAGER)
+    private readonly transactionManager: TransactionManager
+  ) {
+    registerGlobalTransactionManager(this.transactionManager);
+  }
+}
