@@ -131,7 +131,7 @@ export class UserCoreRepository implements UserRepository {
           user_id: requestDto.userId,
           is_deleted: false,
         },
-        data: { is_deleted: true, updated_at: new Date() },
+        data: { is_deleted: true },
       });
       if (!signoutUser) {
         throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
@@ -141,7 +141,7 @@ export class UserCoreRepository implements UserRepository {
         where: {
           user_id: requestDto.userId,
         },
-        data: { refresh_token: '', updated_at: new Date() },
+        data: { refresh_token: '' },
       });
       if (!signoutToken) {
         throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
