@@ -6,6 +6,7 @@ import * as mysql from 'mysql2/promise';
 import Redis from 'ioredis';
 import { randomUUID } from 'crypto';
 import * as dotenv from 'dotenv';
+import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 /**
  * recording.process-worker.ts
@@ -33,16 +34,16 @@ import * as dotenv from 'dotenv';
  */
 dotenv.config();
 
-const WORKER_ID = process.env.WORKER_ID ?? randomUUID();
+const WORKER_ID = process.env.WORKER_ID ?? 'worker1';
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
-const JOB_DONE_QUEUE_KEY = process.env.JOB_DONE_QUEUE_KEY!;
-const JOB_META_KEY = process.env.JOB_META_KEY!;
-const JOB_WAITING_QUEUE = process.env.JOB_WAITING_QUEUE!;
-const JOB_FAIL_QUEUE = process.env.JOB_FAIL_QUEUE!;
-const HEARTBEAT_KEY = `${process.env.HEARTBEAT_KEY!}:${WORKER_ID}`;
-const RECORDING_SET_KEY = `${process.env.RECORDING_SET_PREFIX!}:${WORKER_ID}`;
-const MAX_CONCURRENT_RECORDINGS = Number(process.env.MAX_CONCURRENT_RECORDINGS ?? 10);
+const JOB_DONE_QUEUE_KEY = REDIS_KEY.JOB_DONE_QUEUE;
+const JOB_META_KEY = REDIS_KEY.JOB_META;
+const JOB_WAITING_QUEUE = REDIS_KEY.JOB_WAITING_QUEUE;
+const JOB_FAIL_QUEUE = REDIS_KEY.JOB_FAIL_QUEUE;
+const HEARTBEAT_KEY = `${REDIS_KEY.HEARTBEAT}:${WORKER_ID}`;
+const RECORDING_SET_KEY = `${REDIS_KEY.RECORDING_SET_PREFIX}:${WORKER_ID}`;
+const MAX_CONCURRENT_RECORDINGS = Number(process.env.MAX_CONCURRENT_RECORDINGS ?? 5);
 
 let currentRunning = 0;
 const redis = new Redis(REDIS_PORT, REDIS_HOST);

@@ -14,10 +14,10 @@ export class RedisService
     const REDIS_PORT = Number(process.env.REDIS_PORT) || 6379;
 
     let attempts = 0;
-    const maxAttempts = Number(process.env.REDIS_MAX_RETRIES ?? 3);
-    const retryDelay = Number(process.env.REDIS_RETRY_DELAY ?? 5000);
+    const MAX_ATTEMPTS = Number(process.env.REDIS_MAX_RETRIES ?? 3);
+    const RETRY_DELAY = Number(process.env.REDIS_RETRY_DELAY ?? 5000);
 
-    while (attempts < maxAttempts) {
+    while (attempts < MAX_ATTEMPTS) {
       try {
         this.client = new Redis({
           host: REDIS_HOST,
@@ -30,9 +30,9 @@ export class RedisService
         return;
       } catch (error) {
         attempts++;
-        console.error(`[RedisService] Redis 연결 실패 (시도 ${attempts}/${maxAttempts})`, error);
-        if (attempts < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        console.error(`[RedisService] Redis 연결 실패 (시도 ${attempts}/${MAX_ATTEMPTS})`, error);
+        if (attempts < MAX_ATTEMPTS) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         } else {
           console.error('[RedisService] Redis 연결 재시도 실패. 애플리케이션을 종료합니다.');
           process.exit(1);

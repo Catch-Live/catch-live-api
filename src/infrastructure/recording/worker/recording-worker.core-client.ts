@@ -16,6 +16,7 @@ import {
   NotificationRepository,
 } from 'src/domain/notification/notification.repository';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
+import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 /**
  * RecordingWorkerCoreClient
@@ -44,13 +45,13 @@ export class RecordingWorkerCoreClient
   implements RecordingWorkerClient, OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(RecordingWorkerCoreClient.name);
-  private readonly JOB_DONE_QUEUE_KEY = process.env.JOB_DONE_QUEUE_KEY!;
-  private readonly JOB_META_KEY = process.env.JOB_META_KEY!;
-  private readonly JOB_WAITING_QUEUE = process.env.JOB_WAITING_QUEUE!;
-  private readonly JOB_FAIL_QUEUE = process.env.JOB_FAIL_QUEUE!;
-  private readonly HEARTBEAT_KEY = process.env.HEARTBEAT_KEY!;
-  private readonly RECORDING_SET_PREFIX = process.env.RECORDING_SET_PREFIX!;
-  private readonly STREAMERS_KEY = process.env.STREAMERS_KEY!;
+  private readonly JOB_DONE_QUEUE_KEY = REDIS_KEY.JOB_DONE_QUEUE;
+  private readonly JOB_META_KEY = REDIS_KEY.JOB_META;
+  private readonly JOB_WAITING_QUEUE = REDIS_KEY.JOB_WAITING_QUEUE;
+  private readonly JOB_FAIL_QUEUE = REDIS_KEY.JOB_FAIL_QUEUE;
+  private readonly HEARTBEAT_KEY = REDIS_KEY.HEARTBEAT;
+  private readonly RECORDING_SET_PREFIX = REDIS_KEY.RECORDING_SET_PREFIX;
+  private readonly STREAMERS_KEY = REDIS_KEY.MONITORING_STREAMERS;
   private doneJobPollInterval: NodeJS.Timeout | null = null;
   private failoverCheckInterval: NodeJS.Timeout | null = null;
   private readonly failedWorkerSet = new Set<string>();

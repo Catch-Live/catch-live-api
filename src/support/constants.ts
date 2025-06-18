@@ -17,3 +17,18 @@ export const OAUTH_URL = {
     GOOGLE: 'https://www.googleapis.com/oauth2/v2/userinfo',
   },
 };
+
+export const SERVER_URL = {
+  MONITORING: {
+    BASE: process.env.NODE_ENV === 'production' ? 'http://monitor:3001' : 'http://localhost:3001',
+  },
+};
+
+export const JWT_CONFIG = {
+  ACCESS: {
+    EXPIRES_IN: '1h',
+  },
+  REFRESH: {
+    EXPIRES_IN: '7d',
+  },
+};

@@ -9,6 +9,7 @@ import { STREAMER_REPOSITORY, StreamerRepository } from '../streamer/streamer.re
 import { CACHE_SERVICE, CacheService } from '../common/cache/cache.service';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
+import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 @Injectable()
 export class SubscriptionService {
@@ -23,7 +24,7 @@ export class SubscriptionService {
     private readonly cacheService: CacheService
   ) {}
 
-  private readonly IS_CHANGED_KEY = process.env.IS_CHANGED_KEY || 'monitoring:isChanged';
+  private readonly IS_CHANGED_KEY = REDIS_KEY.MONITORING_IS_CHANGED;
 
   async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
     return await this.subscriptionRepository.getSubscriptions(userId);

@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { SUBSCRIPTION } from 'src/domain/common/constants/domain.constants';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
 import { StreamerService } from 'src/domain/streamer/streamer.service';
@@ -14,7 +15,7 @@ export class SubscriptionUseCase {
   ) {}
 
   private readonly logger = new Logger(SubscriptionUseCase.name);
-  private readonly SUBSCRIPTION_LIMIT = Number(process.env.SUBSCRIPTION_LIMIT);
+  private readonly SUBSCRIPTION_LIMIT = Number(SUBSCRIPTION.LIMIT);
 
   async getSubscriptions(userId: number): Promise<SubscriptionWithChannelResult[]> {
     return this.subscriptionService.getSubscriptions(userId);
