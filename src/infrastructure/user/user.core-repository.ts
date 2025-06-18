@@ -31,14 +31,24 @@ export class UserCoreRepository implements UserRepository {
     );
   }
 
-  async findTokenById(userId: number): Promise<string | null> {
+  async findTokenById(userId: number): Promise<TokenEntity | null> {
     const token = await this.prisma.token.findUnique({
       where: {
         user_id: userId,
       },
     });
 
-    return token ? token.refresh_token : null;
+    if (!token) {
+      return null;
+    }
+
+    return new TokenEntity(
+      Number(token.token_id),
+      Number(token.user_id),
+      token.refresh_token,
+      token.created_at,
+      token.updated_at
+    );
   }
 
   async updateRefreshToken(userId: number, newRefreshToken: string): Promise<TokenEntity> {
