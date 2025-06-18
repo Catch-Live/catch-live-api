@@ -5,12 +5,14 @@ import { StreamerService } from 'src/domain/streamer/streamer.service';
 import { TRANSACTION_MANAGER, TransactionManager } from '../common/transaction-manager';
 import { CACHE_SERVICE, CacheService } from 'src/domain/common/cache/cache.service';
 import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-with-channel.result';
+import { NotificationService } from 'src/domain/notification/notification.service';
 
 @Injectable()
 export class MonitoringUseCase implements OnModuleInit {
   constructor(
     private readonly streamerService: StreamerService,
     private readonly recordingService: RecordingService,
+    private readonly notificationService: NotificationService,
     @Inject(CACHE_SERVICE) private readonly cacheService: CacheService,
     @Inject(TRANSACTION_MANAGER) private readonly transactionManager: TransactionManager
   ) {}
@@ -88,16 +90,25 @@ export class MonitoringUseCase implements OnModuleInit {
             liveSessionId: liveSession.liveSessionId!,
             platform: liveSession.platform,
             channelId: liveSession.channelId,
+            channelName: liveSession.channelName,
             streamerId: streamer.streamerId,
             videoId: streamer.videoId,
             title: liveSession.title!,
+            subscriptions: [...streamer.subscriptions],
           };
           await this.recordingService.recordLiveStreaming(command);
 
-          // 4. 현재 캐시 상태에서 해당 스트리머 제거
+          // 4. 알림 생성
+          const notificationCommand = {
+            subscriptions: [...streamer.subscriptions],
+            content: `🔴 스트리머 '${streamer.channel.channelName}'님의 라이브 녹화가 시작되었습니다.`,
+          };
+          await this.notificationService.createNotifications(notificationCommand);
+
+          // 5. 현재 캐시 상태에서 해당 스트리머 제거
           cachedData = cachedData.filter((s) => s.streamerId !== streamer.streamerId);
 
-          // 5. 캐시 업데이트
+          // 6. 캐시 업데이트
           await this.cacheService.set(this.STREAMERS_KEY, JSON.stringify(cachedData));
         }
       });

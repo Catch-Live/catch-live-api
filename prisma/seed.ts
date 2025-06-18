@@ -4,12 +4,16 @@ import {
   createStreamer,
   createSubscription,
   createUser,
-} from '../src/support/recording-factory.util';
+} from '../src/support/db-factory.util';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const user = await createUser({ nickname: '테스트유저1' });
+  const user = await createUser({
+    nickname: '테스트유저1',
+    email: 'abcd@google.com',
+    provider: 'GOOGLE',
+  });
   const streamer = await createStreamer({
     platform: 'CHZZK',
     channel_id: 'asdf1234',

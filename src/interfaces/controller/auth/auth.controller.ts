@@ -1,24 +1,23 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Logger, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ResultResponseDto } from '../common/dto/result.response.dto';
 import { AuthUseCase } from 'src/application/auth/auth.use-case';
 import { SocialLoginDto } from './dto/auth.social-login.dto';
-import { Response } from 'express';
-import { REFRESH_TOKEN_COOKIE_TTL } from 'src/support/constants';
+import { Request, Response } from 'express';
+import { REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_TTL } from 'src/support/constants';
 import { isNeedSignupResponse } from 'src/domain/auth/need-signup.response';
-import { UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/interfaces/controller/common/guards/jwt-auth.guard';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
-import { Request } from 'express';
 import { LogoutRequestDto } from 'src/interfaces/controller/auth/dto/logout.request.dto';
 import { LogoutResponseDto } from './dto/logout.response.dto';
 import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 import { SignupDto } from './dto/auth.signup.dto';
-import { REFRESH_TOKEN_COOKIE_NAME } from 'src/support/constants';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authUseCase: AuthUseCase) {}
+
+  private readonly logger = new Logger(AuthController.name);
 
   @Post('login')
   async login(@Body() socialLoginDto: SocialLoginDto, @Res() res: Response): Promise<void> {
@@ -33,7 +32,7 @@ export class AuthController {
     const { accessToken, refreshToken } = result;
 
     res
-      .cookie('refreshToken', refreshToken, {
+      .cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
@@ -50,6 +49,20 @@ export class AuthController {
     await this.authUseCase.signup(command);
 
     res.status(HttpStatus.CREATED).json(ResultResponseDto.success());
+  }
+
+  @Post('tokens/refresh')
+  async refreshToken(@Req() req: Request, @Res() res: Response) {
+    try {
+      const { refreshToken } = req.cookies;
+      const data = await this.authUseCase.refresh(refreshToken);
+
+      res.status(HttpStatus.CREATED).json(ResultResponseDto.success(data));
+    } catch (error) {
+      this.logger.error('AccessToken refresh 실패', error);
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME);
+      throw error;
+    }
   }
 
   @UseGuards(JwtAuthGuard)

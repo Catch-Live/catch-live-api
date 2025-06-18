@@ -46,18 +46,29 @@ export class StreamerCoreRepository implements StreamerRepository {
         channel_name: true,
         video_id: true,
         created_at: true,
+        subscriptions: {
+          where: {
+            is_connected: true,
+          },
+          select: {
+            user_id: true,
+          },
+        },
       },
     });
 
     return queryResult.map((streamer) => ({
       streamerId: Number(streamer.streamer_id),
+      createdAt: streamer.created_at,
       channel: {
+        platform: streamer.platform,
         channelId: streamer.channel_id,
         channelName: streamer.channel_name,
-        platform: streamer.platform,
         videoId: streamer.video_id,
       },
-      createdAt: streamer.created_at,
+      subscriptions: streamer.subscriptions.map((sub) => ({
+        userId: Number(sub.user_id),
+      })),
     }));
   }
 

@@ -22,6 +22,7 @@ import { StreamerModule } from './interfaces/controller/streamer/streamer.module
     AuthModule,
     RedisModule,
     UserModule,
+    NotificationModule,
     ScheduleModule.forRoot(),
   ],
   providers: [HealthCheckScheduler],
