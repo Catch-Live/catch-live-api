@@ -32,6 +32,6 @@ async function bootstrap() {
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(process.env.MONITORING_PORT ?? 3001);
 }
 bootstrap();
