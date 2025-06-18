@@ -12,6 +12,8 @@ import { GoogleStrategy } from 'src/infrastructure/auth/strategy/google-login.st
 import { JwtStrategy } from 'src/interfaces/controller/common/guards/jwt.strategy';
 import { SOCIAL_LOGIN_STRATEGY } from 'src/domain/auth/strategy/social-login.strategy';
 import { ProfileModule } from 'src/interfaces/controller/profile/profile.module';
+import { USER_REPOSITORY } from 'src/domain/user/user.repository';
+import { UserCoreRepository } from 'src/infrastructure/user/user.core-repository';
 
 @Module({
   imports: [UserModule, ProfileModule, JwtModule.register({})],
@@ -32,6 +34,10 @@ import { ProfileModule } from 'src/interfaces/controller/profile/profile.module'
         google,
       ],
       inject: [KakaoStrategy, NaverStrategy, GoogleStrategy],
+    },
+    {
+      provide: USER_REPOSITORY,
+      useClass: UserCoreRepository,
     },
     SocialLoginFactory,
   ],

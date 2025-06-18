@@ -4,10 +4,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionWithChannelResult } from 'src/domain/subscription/result/subscription-with-channel.result';
 import { ChannelInfo } from 'src/domain/streamer/streamer.entity';
 import { SubscriptionEntity } from 'src/domain/subscription/subscription.entity';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class SubscriptionCoreRepository implements SubscriptionRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getSubscription(userId: number, streamerId: number): Promise<SubscriptionEntity | null> {
     const subscription = await this.prisma.subscription.findFirst({
@@ -123,5 +124,9 @@ export class SubscriptionCoreRepository implements SubscriptionRepository {
       subscription.created_at,
       subscription.updated_at
     );
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
   }
 }

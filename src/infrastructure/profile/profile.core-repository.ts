@@ -4,10 +4,11 @@ import { ProfileResponseResult } from 'src/domain/profile/result/profile.respons
 import { PrismaService } from 'src/infrastructure/prisma/prisma.service';
 import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
 import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
+import { PrismaTxContext } from '../prisma/transactional-context';
 
 @Injectable()
 export class ProfileCoreRepository implements ProfileRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async findFirst(userId: number) {
     const query = {
@@ -28,5 +29,9 @@ export class ProfileCoreRepository implements ProfileRepository {
     const result = new ProfileResponseResult(rawData.created_at, rawData.provider, rawData.email);
 
     return result;
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() || this.prismaService;
   }
 }

@@ -6,6 +6,7 @@ import { LoginToken } from 'src/domain/auth/login-token';
 import { NeedSignupResponse } from 'src/domain/auth/need-signup.response';
 import { UserEntity } from 'src/domain/user/user.entity';
 import { UserService } from 'src/domain/user/user.service';
+import { Transactional } from 'src/infrastructure/prisma/transactional.decorator';
 import { JwtUtil } from 'src/support/jwt.util';
 import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
 
@@ -52,6 +53,7 @@ export class AuthUseCase {
     return loginToken;
   }
 
+  @Transactional()
   async signup(command: SignupCommand): Promise<void> {
     await this.userService.signup(command);
   }

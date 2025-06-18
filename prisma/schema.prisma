@@ -29,12 +29,12 @@ model User {
 model Streamer {
   streamer_id   BigInt         @id @default(autoincrement())
   platform      Platform
-  channel_id    String         @unique()
+  channel_id    String         @unique
   channel_name  String
-  video_id      String         @default("")
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
   is_live       Boolean?       @default(false)
+  video_id      String         @default("")
   subscriptions Subscription[]
   live_sessions LiveSession[]
 
@@ -107,16 +107,16 @@ model Notification {
   @@map("notification")
 }
 
-view VSubscribedSession {
-  live_session_id  BigInt                                  @unique @default(0)
+view vSubscribedSessions {
+  recording_id     BigInt                                  @unique @default(0)
+  live_session_id  BigInt
   title            String
   platform         v_subscribed_sessions_platform?         @default(CHZZK)
   channel_id       String?
   channel_name     String?
   live_status      v_subscribed_sessions_live_status?      @default(LIVE)
-  recording_id     BigInt?                                 @default(0)
-  video_url        String?
-  started_at       DateTime?                               @default(now())
+  video_url        String?                                 @db.Text
+  started_at       DateTime                                @default(now())
   completed_at     DateTime?
   recording_status v_subscribed_sessions_recording_status? @default(RECORDING)
   user_id          BigInt
