@@ -4,6 +4,8 @@ import { USER_REPOSITORY, UserRepository } from './user.repository';
 import { SignupCommand } from '../auth/command/signup.command';
 import { DomainCustomException } from '../common/errors/domain-custom-exception';
 import { DomainErrorCode } from '../common/errors/domain-error-code';
+import { UserRequestCommand } from './user.command';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -42,5 +44,10 @@ export class UserService {
     }
 
     userToken.compare(refreshToken);
+  }
+
+  async signout(command: UserRequestCommand) {
+    const queryData = await this.userRepository.signout(command);
+    return queryData;
   }
 }
