@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,10 +15,10 @@ jobs:
     env:
       AWS_REGION: ap-northeast-2
       ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-      ECR_MAIN: main
-      ECR_MONITOR: monitor
-      ECR_WORKER1: worker1
-      ECR_WORKER2: worker2
+      ECR_MAIN: prod/catch-live-main
+      ECR_MONITOR: prod/catch-live-monitor
+      ECR_WORKER1: prod/catch-live-worker1
+      ECR_WORKER2: prod/catch-live-worker2
       IMAGE_TAG: latest
 
     steps:
