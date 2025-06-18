@@ -4,7 +4,6 @@ import { spawn } from 'child_process';
 import { S3 } from 'aws-sdk';
 import * as mysql from 'mysql2/promise';
 import Redis from 'ioredis';
-import { randomUUID } from 'crypto';
 import * as dotenv from 'dotenv';
 import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 

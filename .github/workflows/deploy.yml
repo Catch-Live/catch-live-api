@@ -1,0 +1,77 @@
+name: Deploy to Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ap-northeast-2
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      ECR_MAIN: main
+      ECR_MONITOR: monitor
+      ECR_WORKER1: worker1
+      ECR_WORKER2: worker2
+      IMAGE_TAG: latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Build & Push Main Image
+        run: |
+          docker build -f docker/main.Dockerfile -t $ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG
+
+      - name: Build & Push Monitor Image
+        run: |
+          docker build -f docker/monitor.Dockerfile -t $ECR_REGISTRY/$ECR_MONITOR:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_MONITOR:$IMAGE_TAG
+
+      - name: Build & Push Worker1 Image
+        run: |
+          docker build -f docker/worker1.Dockerfile -t $ECR_REGISTRY/$ECR_WORKER1:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_WORKER1:$IMAGE_TAG
+
+      - name: Build & Push Worker2 Image
+        run: |
+          docker build -f docker/worker2.Dockerfile -t $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG
+
+      - name: Replace image URIs in Dockerrun.aws.json
+        run: |
+          sed -i "s|<ECR_MAIN_IMAGE_URL>|$ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG|g" Dockerrun.aws.json
+          sed -i "s|<ECR_MONITOR_IMAGE_URL>|$ECR_REGISTRY/$ECR_MONITOR:$IMAGE_TAG|g" Dockerrun.aws.json
+          sed -i "s|<ECR_WORKER1_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER1:$IMAGE_TAG|g" Dockerrun.aws.json
+          sed -i "s|<ECR_WORKER2_IMAGE_URL>|$ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG|g" Dockerrun.aws.json
+
+      - name: Zip and Upload to S3
+        run: |
+          zip -r deploy.zip Dockerrun.aws.json .ebextensions
+          aws s3 cp deploy.zip s3://catch-live-eb/deploy.zip
+
+      - name: Deploy to Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name catch-live-backend \
+            --version-label deploy-${{ github.run_number }} \
+            --source-bundle S3Bucket="catch-live-eb",S3Key="deploy.zip"
+
+          aws elasticbeanstalk update-environment \
+            --environment-name Catch-live-backend-env \
+            --version-label deploy-${{ github.run_number }}
