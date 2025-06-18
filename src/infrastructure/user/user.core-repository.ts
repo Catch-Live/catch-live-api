@@ -90,10 +90,12 @@ export class UserCoreRepository implements UserRepository {
     }
   }
 
-  async createToken(userId: number): Promise<void> {
+  async upsertToken(userId: number): Promise<void> {
     try {
-      await this.prisma.token.create({
-        data: {
+      await this.prisma.token.upsert({
+        where: { user_id: userId },
+        update: { refresh_token: '' },
+        create: {
           user_id: userId,
           refresh_token: '',
         },
@@ -109,10 +111,7 @@ export class UserCoreRepository implements UserRepository {
   async findByNickname(nickname: string): Promise<UserEntity | null> {
     try {
       const user = await this.prisma.user.findFirst({
-        where: {
-          nickname,
-          is_deleted: false,
-        },
+        where: { nickname },
       });
 
       if (!user) {
@@ -143,7 +142,7 @@ export class UserCoreRepository implements UserRepository {
           user_id: requestDto.userId,
           is_deleted: false,
         },
-        data: { is_deleted: true },
+        data: { is_deleted: true, nickname: '' },
       });
       if (!signoutUser) {
         throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
@@ -192,6 +191,22 @@ export class UserCoreRepository implements UserRepository {
     } catch {
       throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
     }
+  }
+
+  async restoreUser(userId: number, command: SignupCommand): Promise<void> {
+    const { email, nickname, provider } = command;
+
+    await this.prisma.user.update({
+      where: {
+        provider_email: { email, provider },
+      },
+      data: {
+        email,
+        nickname,
+        provider,
+        is_deleted: false,
+      },
+    });
   }
 
   private get prisma() {
