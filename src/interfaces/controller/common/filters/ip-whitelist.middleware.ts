@@ -13,8 +13,9 @@ export class IpWhitelistMiddleware implements NestMiddleware {
       .replace(/^::ffff:/, '')
       .split(',')[0]
       .trim();
+    const isAllowAllIp = process.env.ALLOW_ALL_IP === 'true';
 
-    if (!this.allowedIps.includes(normalizedIp)) {
+    if (!isAllowAllIp && !this.allowedIps.includes(normalizedIp)) {
       throw new ForbiddenException(`Access denied from IP: ${normalizedIp}`);
     }
 
