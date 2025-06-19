@@ -34,6 +34,13 @@ async function bootstrap() {
       },
     })
   );
+  // cors 설정
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(cookieParser());
