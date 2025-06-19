@@ -104,10 +104,10 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name catch-live-backend \
+            --application-name catch-live-backend-app \
             --version-label deploy-${{ github.run_number }} \
             --source-bundle S3Bucket="catch-live-eb",S3Key="deploy.zip"
 
           aws elasticbeanstalk update-environment \
-            --environment-name Catch-live-backend-env \
+            --environment-name catch-live-backend \
             --version-label deploy-${{ github.run_number }}
