@@ -56,6 +56,39 @@ jobs:
           docker build -f docker/worker2.Dockerfile -t $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_WORKER2:$IMAGE_TAG
 
+      - name: Generate environment.config
+        run: |
+          mkdir -p .ebextensions
+          cat .ebextensions/environment.config.template \
+          | sed "s#\${ALLOW_ALL_IP}#${{ secrets.ALLOW_ALL_IP }}#g" \
+          | sed "s#\${YOUTUBE_API_KEYS}#${{ secrets.YOUTUBE_API_KEYS }}#g" \
+          | sed "s#\${AWS_ACCESS_KEY_ID}#${{ secrets.AWS_ACCESS_KEY_ID }}#g" \
+          | sed "s#\${AWS_REGION}#${{ secrets.AWS_REGION }}#g" \
+          | sed "s#\${AWS_SECRET_ACCESS_KEY}#${{ secrets.AWS_SECRET_ACCESS_KEY }}#g" \
+          | sed "s#\${DATABASE_URL}#${{ secrets.DATABASE_URL }}#g" \
+          | sed "s#\${DB_HOST}#${{ secrets.DB_HOST }}#g" \
+          | sed "s#\${DB_NAME}#${{ secrets.DB_NAME }}#g" \
+          | sed "s#\${DB_PASSWORD}#${{ secrets.DB_PASSWORD }}#g" \
+          | sed "s#\${DB_PORT}#${{ secrets.DB_PORT }}#g" \
+          | sed "s#\${DB_USER}#${{ secrets.DB_USER }}#g" \
+          | sed "s#\${GOOGLE_CLIENT_ID}#${{ secrets.GOOGLE_CLIENT_ID }}#g" \
+          | sed "s#\${GOOGLE_CLIENT_SECRET}#${{ secrets.GOOGLE_CLIENT_SECRET }}#g" \
+          | sed "s#\${GOOGLE_REDIRECT_URI}#${{ secrets.GOOGLE_REDIRECT_URI }}#g" \
+          | sed "s#\${JWT_ACCESS_SECRET}#${{ secrets.JWT_ACCESS_SECRET }}#g" \
+          | sed "s#\${JWT_REFRESH_SECRET}#${{ secrets.JWT_REFRESH_SECRET }}#g" \
+          | sed "s#\${KAKAO_CLIENT_ID}#${{ secrets.KAKAO_CLIENT_ID }}#g" \
+          | sed "s#\${KAKAO_REDIRECT_URI}#${{ secrets.KAKAO_REDIRECT_URI }}#g" \
+          | sed "s#\${MAX_CONCURRENT_RECORDINGS}#${{ secrets.MAX_CONCURRENT_RECORDINGS }}#g" \
+          | sed "s#\${NAVER_CLIENT_ID}#${{ secrets.NAVER_CLIENT_ID }}#g" \
+          | sed "s#\${NAVER_CLIENT_SECRET}#${{ secrets.NAVER_CLIENT_SECRET }}#g" \
+          | sed "s#\${NAVER_STATE}#${{ secrets.NAVER_STATE }}#g" \
+          | sed "s#\${REDIS_HOST}#${{ secrets.REDIS_HOST }}#g" \
+          | sed "s#\${REDIS_MAX_RETRIES}#${{ secrets.REDIS_MAX_RETRIES }}#g" \
+          | sed "s#\${REDIS_PORT}#${{ secrets.REDIS_PORT }}#g" \
+          | sed "s#\${REDIS_RETRY_DELAY}#${{ secrets.REDIS_RETRY_DELAY }}#g" \
+          | sed "s#\${S3_BUCKET_NAME}#${{ secrets.S3_BUCKET_NAME }}#g" \
+          > .ebextensions/environment.config
+
       - name: Generate docker-compose.yml
         run: |
           sed "s|<ECR_MAIN_IMAGE_URL>|$ECR_REGISTRY/$ECR_MAIN:$IMAGE_TAG|g" docker-compose.template.yml |
