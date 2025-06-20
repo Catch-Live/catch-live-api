@@ -3,7 +3,8 @@ services:
   main:
     image: <ECR_MAIN_IMAGE_URL>
     ports:
-      - '3000:3000'
+      - '8080:3000'
+    entrypoint: ['node', 'dist/src/main.js']
     environment:
       - NODE_ENV=production
       - CORS_ORIGIN=${CORS_ORIGIN}
@@ -39,6 +40,7 @@ services:
     image: <ECR_MONITOR_IMAGE_URL>
     expose:
       - '3001'
+    entrypoint: ['node', 'dist/src/monitor.js']
     environment:
       - NODE_ENV=production
       - ALLOW_ALL_IP=${ALLOW_ALL_IP}
@@ -71,7 +73,10 @@ services:
 
   worker1:
     image: <ECR_WORKER1_IMAGE_URL>
+    entrypoint: ['node', 'dist/src/infrastructure/recording/worker/recording.process-worker.js']
     environment:
+      - WORKER_ID=worker-1
+      - WORKER_PORT=5001
       - NODE_ENV=production
       - ALLOW_ALL_IP=${ALLOW_ALL_IP}
       - YOUTUBE_API_KEYS=${YOUTUBE_API_KEYS}
@@ -92,7 +97,10 @@ services:
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
   worker2:
     image: <ECR_WORKER2_IMAGE_URL>
+    entrypoint: ['node', 'dist/src/infrastructure/recording/worker/recording.process-worker.js']
     environment:
+      - WORKER_ID=worker-2
+      - WORKER_PORT=5002
       - NODE_ENV=production
       - ALLOW_ALL_IP=${ALLOW_ALL_IP}
       - YOUTUBE_API_KEYS=${YOUTUBE_API_KEYS}

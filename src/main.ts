@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { API_PREFIX } from './support/constants';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
@@ -11,8 +11,9 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: ['log', 'error', 'warn'],
+    logger: ['log', 'error', 'warn', 'debug'],
   });
+  const logger = new Logger(bootstrap.name);
   // api path에 prefix 설정
   app.setGlobalPrefix(API_PREFIX);
   app.useGlobalPipes(
@@ -34,17 +35,45 @@ async function bootstrap() {
       },
     })
   );
+
   // cors 설정
   app.enableCors({
-    origin: process.env.CORS_ORIGIN,
+    origin: process.env.CORS_ORIGIN ?? '*',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
-  // 전역 ExceptionFilter 등록
-  app.useGlobalFilters(new HttpExceptionFilter());
-  app.use(cookieParser());
-  app.set('trust proxy', true);
-  await app.listen(process.env.MAIN_PORT ?? 3000);
+
+  console.log('CORS_ORIGIN', process.env.CORS_ORIGIN);
+
+  try {
+    // 전역 ExceptionFilter 등록
+    app.useGlobalFilters(new HttpExceptionFilter());
+    app.use(cookieParser());
+    app.set('trust proxy', true);
+    logger.log('🔥 About to call app.listen()');
+    await Promise.race([
+      app.listen(3000),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('❌ app.listen() timeout after 5 seconds')), 5000)
+      ),
+    ]);
+    logger.log('✅ After listen');
+    const url = await app.getUrl();
+    logger.log(`✅ Application is running on: ${url}`);
+  } catch (err) {
+    logger.error('Main err:', err);
+  }
 }
-bootstrap();
+
+process.on('uncaughtException', (err) => {
+  console.error('🚨 Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('🚨 Unhandled Rejection:', reason);
+});
+
+bootstrap().catch((err) => {
+  console.error('❌ Nest application failed to start', err);
+});

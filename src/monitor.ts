@@ -32,6 +32,19 @@ async function bootstrap() {
   );
   // 전역 ExceptionFilter 등록
   app.useGlobalFilters(new HttpExceptionFilter());
-  await app.listen(process.env.MONITORING_PORT ?? 3001);
+  await app
+    .listen(3001)
+    .then(() => {
+      console.log(`✅ Listening on port 3001`);
+    })
+    .catch((err) => {
+      console.error('❌ Failed to listen:', err);
+    });
+
+  const url = await app.getUrl();
+  console.log(`✅ Application is running on: ${url}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('❌ Nest application failed to start', err);
+});

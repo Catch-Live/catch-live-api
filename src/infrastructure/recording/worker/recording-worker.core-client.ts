@@ -70,8 +70,16 @@ export class RecordingWorkerCoreClient
   ) {}
 
   onModuleInit() {
-    this.startPollingDoneJobs();
-    this.startFailoverDetection();
+    this.logger.log('⚙️ RecordingWorkerCoreClient Init 시작');
+
+    try {
+      this.startPollingDoneJobs();
+      this.logger.log('✅ startPollingDoneJobs started');
+      this.startFailoverDetection();
+      this.logger.log('✅ startFailoverDetection started');
+    } catch (err) {
+      this.logger.error('❌ RecordingWorkerCoreClient Init 중 에러:', err);
+    }
   }
 
   onModuleDestroy() {

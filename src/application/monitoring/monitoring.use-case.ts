@@ -64,7 +64,7 @@ export class MonitoringUseCase implements OnModuleInit {
       for (const streamer of liveStreamers) {
         // 만약 라이브 방송 녹화 중이면 skip
         if (streamer.isLive) {
-          return;
+          continue;
         }
 
         // 1. 스트리머 상태 변경

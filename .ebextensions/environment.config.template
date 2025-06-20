@@ -1,5 +1,6 @@
 option_settings:
   aws:elasticbeanstalk:application:environment:
+    CORS_ORIGIN: "${CORS_ORIGIN}"
     ALLOW_ALL_IP: "${ALLOW_ALL_IP}"
     YOUTUBE_API_KEYS: "${YOUTUBE_API_KEYS}"
     AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
