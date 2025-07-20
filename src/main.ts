@@ -52,7 +52,7 @@ async function bootstrap() {
     app.use(cookieParser());
     app.set('trust proxy', true);
     logger.log('🔥 About to call app.listen()');
-    await app.listen(8080);
+    await app.listen(3000);
     logger.log('✅ After listen');
     const url = await app.getUrl();
     logger.log(`✅ Application is running on: ${url}`);

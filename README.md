@@ -1,6 +1,7 @@
-# 실시간 스트리밍 녹화 시스템
+# 실시간 스트리밍 녹화 프로젝트
 
 **“실시간 방송, 놓치지 말고 CatchLive 하세요!”
+<br />
 “당신의 스트리머의 스트리밍 순간을 자동으로 캐치해드립니다.”**
 
 <br />
@@ -12,15 +13,12 @@
 1. [프로젝트 개요](#1-프로젝트-개요)
 2. [프로젝트 동기](#2-프로젝트-동기)
 3. [기술 스택](#3-기술-스택)
-4. [아키텍처](#4-아키텍처)
-5. [주요 기능](#5-주요-기능)
-6. [기능 명세 및 시퀀스 다이어그램](#6-기능-명세-및-시퀀스-다이어그램)
-7. [API 명세](#7-api-명세서)
-8. [트러블슈팅](#8-트러블슈팅)
-9. [개발 중 고민과 해결](#9-개발-중-고민과-해결)
-10. [배포 링크 및 스크린샷](#10-배포-링크-및-스크린샷)
-11. [향후 계획](#11-향후-계획)
-12. [팀원 정보](#12-팀원-정보)
+4. [주요 기능](#4-주요-기능)
+5. [기능 명세 및 API 명세](#5-기능-명세-및-api-명세)
+6. [트러블슈팅](#6-트러블슈팅)
+7. [개발 중 고민과 해결](#7-개발-중-고민과-해결)
+8. [배포 링크 및 스크린샷](#8-배포-링크-및-스크린샷)
+9. [팀원 정보](#9-팀원-정보)
 
 ---
 
@@ -41,19 +39,15 @@
 
 <br />
 
-보통 PT 회원들은 매번 PT 수업이 끝난 뒤 구두로 다음 수업을 잡습니다. 이때 회원 입장에서는
-<span style="color:#cd8741"> **어느 날짜, 어느 시간에 수업이 비어 있는지 알 수 없어 매우 불편** </span>합니다.
-트레이너 입장에서도 회원과 수업 날짜를 잡기 위해
-<span style="color:#cd8741">**매번 수업 시간표를 확인해야 하는 번거로움**</span> 이 있습니다.
+실시간 라이브 스트리밍은 점점 더 많은 콘텐츠가 생성되고 소비되는 핵심 플랫폼이 되고 있습니다. 하지만 플랫폼 자체에서 라이브 방송을 다시 보기 기능 없이 종료해버리는 경우가 많고, 사용자들이 놓친 방송을 다시 시청할 수 있는 방법은 제한적입니다.
 
-이렇게 트레이너와 회원 간의 번거로운 문제를 해결하기 위해 예약 서비스를 만들려고 합니다.
-이를 통해 회원은 언제 어디서든 <span style="color:#cd8741"> **실시간으로** </span> 예약 가능한 시간대를 확인하여 예약할 수 있고,
-트레이너 역시 수업 일정 관리의 부담을 줄일 수 있도록 자동화된 시스템을 제공합니다.
+특히 팬덤 중심의 콘텐츠 소비가 활발한 지금, 실시간 스트리밍을 놓치면 영영 볼 수 없는 아쉬움은 사용자에게 큰 불편함이 됩니다. 또한 크리에이터나 데이터 분석가 입장에서는 방송 기록을 보관하거나 후속 콘텐츠 제작에 활용할 수 있는 수단이 필요합니다.
+
+이 프로젝트는 YouTube, 치지직(Chzzk) 등 다양한 플랫폼에서 실시간 방송이 시작되면 자동으로 감지하고, 방송 종료 시까지 안정적으로 녹화해주는 백엔드 시스템을 구현한 것입니다.
 
 <br />
 
-> 우리가 만들 서비스는 네이버 예약처럼 누구나 예약할 수 있는 시스템이 아니고,
-> <span style="color:#cd8741"> **트레이너와 PT를 받는 회원만 예약할 수 있는 서비스입니다.** </span>
+> 채널 구독 -> 라이브 감지 → 녹화 시작 → S3 업로드 → 완료 알림 -> 영상 다운로드까지 자동화된 파이프라인을 통해 팬, 크리에이터, 플랫폼 운영자 모두에게 유용한 스트리밍 백업 시스템을 만드는 것이 목표였습니다.
 
 <br />
 
@@ -65,136 +59,50 @@
 
 ### **Backend**
 
-- **Language**: Java 17
-- **Framework**: Spring Boot 3.4.1
+- **Language**: Node 18
+- **Framework**: NestJS 11
 - **Database**: MySQL 8.xx
-- **ORM**: Spring Data JPA + QueryDSL
+- **Infrastructure**: Redis 7.x
+- **ORM**: Prisma 6.8
 - **Authentication**: OAuth2 + JWT
-- **Push Notification**: Firebase Cloud Messaging (FCM)
 
 ### **Infra & DevOps**
 
-- **CI/CD**: GitHub Actions + Docker + EC2
-- **Middleware:** AWS SNS, AWS S3, AWS RDS(8.xx)
-- **Monitoring**: (예정) Spring Actuator, Grafana
+- **CI/CD**: GitHub Actions + Docker + AWS Elastic Beanstalk
+- **Middleware:** AWS ElasticCache, AWS S3, AWS RDS
 
 ---
 
-## 4. 아키텍처
-
-![아키텍처](docs/images/architecture.png)
-
----
-
-## 5. 주요 기능
+## 4. 주요 기능
 
 <br />
 
-| **기능**           | **설명**                                                          |
-| ------------------ | ----------------------------------------------------------------- |
-| **예약 등록**      | 회원이 세션을 선택해 예약 요청                                    |
-| **고정 예약**      | 세션이 모두 소진될 때까지 동일 요일, 시간으로 반복 예약 자동 생성 |
-| **예약 취소**      | 취소 사유 및 승인 절차 포함                                       |
-| **예약 변경 요청** | 기존 예약에 대한 시간 변경 요청 기능                              |
-| **휴무 설정**      | 트레이너가 특정 날짜를 휴무로 설정하면 해당일 예약 불가 처리      |
-| **알림 기능**      | 예약 확정, 변경, 취소 시 회원/트레이너에게 실시간 푸시 알림 전송  |
-| **운영 시간 관리** | 트레이너가 요일별 예약 가능 시간 설정 가능                        |
-| **선호 시간 설정** | 회원이 운동하기 좋은 선호 시간 등록 가능                          |
-
 ---
 
-## 6. 기능 명세 및 시퀀스 다이어그램
+## 5. 기능 명세 및 API 명세
 
 <br />
 
-### 트레이너 기능 명세
-
-[트레이너*기능*명세](https://docs.google.com/spreadsheets/d/1Cix12FeJTmoz3gzzo4VPtI6R5A02McWfG6qDqzWzJbE/edit?gid=0#gid=0)
-
-### 회원 기능 명세
-
-[회원*기능*명세](https://docs.google.com/spreadsheets/d/1LKWKU2DC2aeEGF3aiv0lQzqPqj3zJaA_4RqLQuoKgOM/edit?usp=sharing)
-
-### 시퀀스 다이어그램 1
-
-![시퀀스1](docs/images/sequence1.png)
-
-### 시퀀스 다이어그램 2
-
-![시퀀스1](docs/images/sequence2.png)
-
-### 시퀀스 다이어그램 3
-
-![시퀀스1](docs/images/sequence3.png)
-
-### 시퀀스 다이어그램 4
-
-![시퀀스1](docs/images/sequence4.png)
-
-### 시퀀스 다이어그램 5
-
-![시퀀스1](docs/images/sequence5.png)
-
 ---
 
-## 7. API 명세서
+## 6. 트러블슈팅
 
 <br />
 
-### **API 명세서**
-
-[FitLink API Docs](https://documenter.getpostman.com/view/19533799/2sAYX6qhbN#43e2212b-4474-433f-81a1-48fc9f4be977)
-
 ---
 
-## 8. 트러블슈팅
+## 7. 개발 중 고민과 해결
 
 <br />
 
-트러블슈팅 관련된 내용은 [여기](docs/troubleshooting.md)을 확인해주세요.
-
 ---
 
-## 9. 개발 중 고민과 해결
+## 8. 배포 링크 및 스크린샷
 
 <br />
 
-프로젝트를 진행하면서 했던 고민과 해결 과정은 [여기](docs/dev-log.md)를 참고해주세요.
-
 ---
 
-## 10. 배포 링크 및 스크린샷
+## 9. 팀원 정보
 
 <br />
-
-### 프론트엔드
-
-- https://fit-link-user.vercel.app
-- https://fit-link-trainer.vercel.app
-
----
-
-## 11. 향후 계획
-
-<br />
-
-- **헬스 커뮤니티**
-- **채팅(트레이너 ↔ 회원간의 소통)**
-- **인바디 연동**
-- **결제(PT 수업 결제)**
-- **회원별 PT 일지 관리**
-
----
-
-## 12. 팀원 정보
-
-<br />
-
-| **Name** | **Position** | **E-Mail**                                                                                                                                  | **GitHub**                      |
-| -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| 최익     | FE           | [ci980704@gmail.com](mailto:ci980704@gmail.com)                                                                                             | https://github.com/choi-ik      |
-| 최용재   | FE           | [yongjae.choi20@gmail.com](mailto:yongjae.choi20@gmail.com)                                                                                 | https://github.com/yjc2021      |
-| 마승현   | Mobile       | [tpdlqj0514@gmail.com](mailto:tpdlqj0514@gmail.com)                                                                                         | https://github.com/MaSeungHyun  |
-| 박경태   | BE           | [smileboy0014@gmail.com](mailto:smileboy0014@gmail.com)                                                                                     | https://github.com/smileboy0014 |
-| 이현규   | BE           | [azdlgusrb@naver.com](mailto:azdlgusrb@naver.com)                                                                                           | https://github.com/wken5577     |
-| 권세영   | Designer     | [tpdud9023@naver.com](https://admin.atlassian.com/o/7cc75f09-da75-490f-a896-40361343b5db/users/712020:27e13b26-4449-4f91-acb0-5717a7a8c9ae) |                                 |
