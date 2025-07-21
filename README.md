@@ -1,98 +1,101 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 실시간 스트리밍 녹화 프로젝트
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**“실시간 방송, 놓치지 말고 CatchLive 하세요!”
+<br />
+“당신의 스트리머의 스트리밍 순간을 자동으로 캐치해드립니다.”**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+<br />
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📖 목차
 
-## Project setup
+1. [프로젝트 개요](#1-프로젝트-개요)
+2. [프로젝트 동기](#2-프로젝트-동기)
+3. [레포지터리 역할](#3-레포지터리-역할)
+4. [핵심 기능](#4-핵심-기능)
+5. [기술 스택](#5-기술-스택)
+6. [개발 중 고민과 해결](#6-개발-중-고민과-해결)
+7. [멤버 소개](#7-멤버-소개)
+8. [회고](#8-회고)
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## 1. 프로젝트 개요
 
-```bash
-# development
-$ npm run start
+<br />
 
-# watch mode
-$ npm run start:dev
+- **프로젝트명**: CatchLive
+- **기간**: 2025.5.26 ~ 2025.6.20
+- **목적**: 실시간 라이브 스트리밍 녹화를 위한 프로젝트
+- **대상 사용자**: 라이브 스트리밍 방송 시간에 약속이 있어서 보지 못하는 사람들
 
-# production mode
-$ npm run start:prod
-```
+<br />
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## 2. 프로젝트 동기
 
-# e2e tests
-$ npm run test:e2e
+<br />
 
-# test coverage
-$ npm run test:cov
-```
+실시간 라이브 스트리밍은 점점 더 많은 콘텐츠가 생성되고 소비되는 핵심 플랫폼이 되고 있습니다. 하지만 플랫폼 자체에서 라이브 방송을 다시 보기 기능 없이 종료해버리는 경우가 많고, 사용자들이 놓친 방송을 다시 시청할 수 있는 방법은 제한적입니다.
 
-## Deployment
+특히 팬덤 중심의 콘텐츠 소비가 활발한 지금, 실시간 스트리밍을 놓치면 영영 볼 수 없는 아쉬움은 사용자에게 큰 불편함이 됩니다. 또한 크리에이터나 데이터 분석가 입장에서는 방송 기록을 보관하거나 후속 콘텐츠 제작에 활용할 수 있는 수단이 필요합니다.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+이 프로젝트는 YouTube, 치지직(Chzzk) 등 다양한 플랫폼에서 실시간 방송이 시작되면 자동으로 감지하고, 방송 종료 시까지 안정적으로 녹화해주는 백엔드 시스템을 구현한 것입니다.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+<br />
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+> 채널 구독 -> 라이브 감지 → 녹화 시작 → S3 업로드 → 완료 알림 -> 영상 다운로드까지 자동화된 파이프라인을 통해 팬, 크리에이터, 플랫폼 운영자 모두에게 유용한 스트리밍 백업 시스템을 만드는 것이 목표였습니다.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+<br />
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 3. 레포지터리 역할
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+<br />
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 4. 핵심 기능
 
-## Stay in touch
+<br />
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 5. 기술 스택
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+<br />
+
+### **Backend**
+
+- **Language**: Node 18
+- **Framework**: NestJS 11
+- **Database**: MySQL 8.xx
+- **Infrastructure**: Redis 7.x
+- **ORM**: Prisma 6.8
+- **Authentication**: OAuth2 + JWT
+
+### **Infra & DevOps**
+
+- **CI/CD**: GitHub Actions + Docker + AWS Elastic Beanstalk
+- **Middleware:** AWS ElasticCache, AWS S3, AWS RDS
+
+---
+
+## 6. 개발 중 고민과 해결
+
+<br />
+
+---
+
+## 7. 멤버 소개
+
+<br />
+
+---
+
+## 8. 회고
+
+<br />

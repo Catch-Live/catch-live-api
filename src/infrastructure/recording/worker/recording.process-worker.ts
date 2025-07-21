@@ -8,28 +8,42 @@ import * as dotenv from 'dotenv';
 import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 /**
- * recording.process-worker.ts
  *
- * Redis 기반 작업 큐를 소비하며 스트리밍 영상을 녹화하고, 결과를 S3에 업로드한 뒤 DB에 반영하는 워커 프로세스.
+ * Redis 기반 작업 큐에서 녹화 작업을 가져와 스트리밍을 영상 파일로 저장하고,
+ * S3 업로드 및 DB 반영까지 수행하는 워커 프로세스
  *
  * 주요 기능:
- * - Redis 큐에서 녹화 작업(job)을 가져와 병렬로 처리 (최대 동시 녹화 수 제한)
- * - Streamlink를 통해 `.ts` 포맷 영상 파일로 녹화
- * - 녹화 완료 시 S3에 업로드하고 DB에 결과 반영
- * - 녹화 중단/종료 시 Redis 상태 정리 및 완료 큐에 결과 전송
- * - 워커는 고유 WORKER_ID로 heartbeat TTL을 주기적으로 Redis에 기록
- * - 시작 시 이전 작업의 잔여 상태를 정리하여 failover 대응
+ * - Redis 큐(JOB_WAITING_QUEUE / JOB_FAIL_QUEUE)에서 작업을 BLPOP 방식으로 polling
+ * - 최대 동시 녹화 수 제한(MAX_CONCURRENT_RECORDINGS) 하에서 병렬 녹화 처리
+ * - Streamlink로 .ts 파일 녹화 후 ffmpeg로 mp4 포맷으로 변환 (압축)
+ * - 완료된 결과를 S3에 업로드하고 DB에 영상 URL 및 완료 상태 반영
+ * - 완료되면 JOB_DONE_QUEUE_KEY에 결과 payload 전송 (status: COMPLETED or FAILED)
+ * - 작업 시작 시 JOB_META_KEY 및 RECORDING_SET_KEY에 상태 저장
+ * - 워커는 HEARTBEAT_KEY에 주기적으로 TTL 갱신 → 장애 감지를 위한 생존 신호
+ * - 워커 시작 시 이전 실패한 세션 정리 및 재시도 큐 등록
  *
- * 사용 Redis 키:
- * - JOB_WAITING_QUEUE / JOB_FAIL_QUEUE (ZSET): 작업 대기 및 실패 큐
- * - JOB_DONE_QUEUE_KEY (LIST): 완료된 작업 큐
- * - JOB_META_KEY (HASH): 작업 메타데이터 저장소
- * - RECORDING_SET_KEY (SET): 현재 워커가 처리 중인 세션 ID 목록
- * - HEARTBEAT_KEY (STRING with TTL): 워커 생존 확인용 키
+ * Redis 키 사용:
+ * - JOB_WAITING_QUEUE (List): 일반 작업 대기 큐 (RPUSH, BLPOP)
+ * - JOB_FAIL_QUEUE (List): 실패한 작업 재시도 큐 (RPUSH, BLPOP, 1회 제한)
+ * - JOB_DONE_QUEUE_KEY (List): 작업 완료 후 상태 전송 큐 (RPUSH, poll by monitor)
+ * - JOB_META_KEY (Hash): 작업 메타데이터 저장소 (liveSessionId → job JSON)
+ * - RECORDING_SET_KEY (Set): 현재 워커가 수행 중인 작업 세션 ID 목록
+ * - HEARTBEAT_KEY (String with TTL): 2초마다 'alive' 기록, TTL 3초 → TTL 0 시 장애 감지
  *
- * 예외 상황:
- * - 녹화 실패 시 1회 재시도 (retryCount)
- * - 재시도 후에도 실패 시 JOB_DONE_QUEUE_KEY에 'FAILED' 상태로 전송
+ * 장애 및 재시도 처리:
+ * - 녹화 중 예외 발생 시 retryCount를 확인하여 0이면 retryCount=1로 증가 후 FAIL_QUEUE로 재등록
+ * - retryCount ≥ 1 이면 DONE_QUEUE에 status: 'FAILED'로 전송
+ * - 워커 시작 시 이전 상태(RECORDING_SET_KEY)를 정리하여 작업 유실 방지
+ *
+ * 외부 연동:
+ * - AWS S3: 완료된 영상 파일 업로드
+ * - MySQL: 녹화 시작 및 완료 시점 기록 (recording 테이블)
+ * - Streamlink / FFmpeg: 영상 녹화 및 압축
+ *
+ * 주의:
+ * - 녹화 제한(MAX_CONCURRENT_RECORDINGS)을 초과할 경우 대기
+ * - 각 작업은 비동기로 처리되어 워커는 연속적으로 polling 가능
+ * - worker ID는 ENV로 지정 (WORKER_ID)
  */
 dotenv.config();
 
@@ -45,7 +59,8 @@ const RECORDING_SET_KEY = `${REDIS_KEY.RECORDING_SET_PREFIX}:${WORKER_ID}`;
 const MAX_CONCURRENT_RECORDINGS = Number(process.env.MAX_CONCURRENT_RECORDINGS ?? 5);
 
 let currentRunning = 0;
-const redis = new Redis(REDIS_PORT, REDIS_HOST);
+const redis = new Redis(REDIS_PORT, REDIS_HOST); // 일반 명령용
+const redisBlocking = new Redis(REDIS_PORT, REDIS_HOST); // BLPOP 전용
 const s3 = new S3();
 const pool = mysql.createPool({
   host: process.env.DB_HOST!,
@@ -139,7 +154,7 @@ async function cleanupStaleJobsOnStartup() {
       const retryCount = job.retryCount ?? 0;
       if (retryCount === 0) {
         job.retryCount = 1;
-        await redis.zadd(JOB_FAIL_QUEUE, Date.now(), JSON.stringify(job));
+        await redis.rpush(JOB_FAIL_QUEUE, JSON.stringify(job));
         console.log(`[${WORKER_ID}] 이전 세션 ${sessionId} → 실패 큐로 이동 (retry 0)`);
       } else {
         console.log(`[${WORKER_ID}] 이전 세션 ${sessionId} → 무시 (retry >= 1)`);
@@ -182,18 +197,16 @@ async function startJobConsumer() {
 }
 
 async function pollJobFromQueues(): Promise<RecordJob | null> {
-  const now = Date.now();
-  for (const queue of [JOB_FAIL_QUEUE, JOB_WAITING_QUEUE]) {
-    const jobs = await redis.zrangebyscore(queue, 0, now, 'LIMIT', 0, 1);
-    if (jobs.length > 0) {
-      const jobStr = jobs[0];
-      const removed = await redis.zrem(queue, jobStr);
-      if (removed) {
-        return JSON.parse(jobStr) as RecordJob;
-      }
-    }
+  try {
+    const result = await redisBlocking.blpop([JOB_FAIL_QUEUE, JOB_WAITING_QUEUE], 5); // 5초 타임아웃
+    if (!result) return null;
+
+    const [, jobStr] = result;
+    return JSON.parse(jobStr) as RecordJob;
+  } catch (err) {
+    console.error(`[pollJobFromQueues] 큐 polling 중 오류`, err);
+    return null;
   }
-  return null;
 }
 
 async function handleJob(job: RecordJob) {
@@ -221,24 +234,29 @@ async function handleJob(job: RecordJob) {
     );
     console.log(`[${WORKER_ID}] 세션 ${liveSessionId} 녹화 완료`);
   } catch (err) {
-    console.error(`[${WORKER_ID}] 세션 ${liveSessionId} 녹화 실패`, err);
-    const retryCount = (job.retryCount ?? 0) + 1;
-    if (retryCount <= 1) {
-      job.retryCount = retryCount;
-      await redis.zadd(JOB_FAIL_QUEUE, Date.now(), JSON.stringify(job));
-    } else {
-      await redis.rpush(
-        JOB_DONE_QUEUE_KEY,
-        JSON.stringify({
-          liveSessionId,
-          streamerId,
-          status: 'FAILED',
-          workerId: WORKER_ID,
-          channelName,
-          subscriptions,
-        })
-      );
+    const isTimeoutError = err instanceof Error && err.message === 'Recording timeout reached';
+
+    if (!isTimeoutError) {
+      console.error(`[${WORKER_ID}] 세션 ${liveSessionId} 녹화 실패`, err);
+      const retryCount = (job.retryCount ?? 0) + 1;
+      if (retryCount <= 1) {
+        job.retryCount = retryCount;
+        await redis.rpush(JOB_FAIL_QUEUE, JSON.stringify(job));
+        return;
+      }
     }
+
+    await redis.rpush(
+      JOB_DONE_QUEUE_KEY,
+      JSON.stringify({
+        liveSessionId,
+        streamerId,
+        status: 'FAILED',
+        workerId: WORKER_ID,
+        channelName,
+        subscriptions,
+      })
+    );
   } finally {
     console.log(`[${WORKER_ID}] 세션 ${liveSessionId} 작업 완료`);
     await redis.srem(RECORDING_SET_KEY, String(liveSessionId));
@@ -265,18 +283,26 @@ async function recordStream(
   const dir = path.resolve(__dirname, 'recordings');
   if (!fs.existsSync(dir)) fs.mkdirSync(dir);
 
-  const filename = `${liveSessionId}-${Date.now()}.ts`;
+  const filename = `${WORKER_ID}-${liveSessionId}-${Date.now()}.ts`;
   const outputPath = path.join(dir, filename);
 
-  await runStreamlink(streamUrl, outputPath);
-  const url = await uploadToS3(outputPath, title, filename);
-  fs.unlinkSync(outputPath);
+  await runStreamlinkWithTimeout(streamUrl, outputPath);
+
+  const afterFilename = filename.replace('.ts', '.mp4');
+  const afterOutputPath = path.join(dir, afterFilename);
+  await compressWithFFmpeg(outputPath, afterOutputPath); // .mp4 압축 변환
+  fs.unlinkSync(outputPath); // 원본 .ts 제거
+
+  const url = await uploadToS3(afterOutputPath, title, filename);
+  fs.unlinkSync(afterOutputPath); // .mp4도 정리
   await completeRecording(recordingId, url);
 }
 
-function runStreamlink(url: string, outputPath: string): Promise<void> {
-  console.log(`[${WORKER_ID}] Streamlink 실행 - URL: ${url}, 출력: ${outputPath}`);
-
+function runStreamlinkWithTimeout(
+  url: string,
+  outputPath: string,
+  timeoutMs: number = 1000 * 60 * 60 * 6 // 예: 6시간
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const p = spawn('streamlink', [
       url,
@@ -288,8 +314,54 @@ function runStreamlink(url: string, outputPath: string): Promise<void> {
       '-o',
       outputPath,
     ]);
-    p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`Exit ${code}`))));
+
+    const timeout = setTimeout(() => {
+      console.warn(`[${WORKER_ID}] 타임아웃 도달. streamlink 강제 종료`);
+      p.kill('SIGKILL');
+      reject(new Error('Recording timeout reached'));
+    }, timeoutMs);
+
+    p.on('close', (code) => {
+      clearTimeout(timeout);
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Exit ${code}`));
+      }
+    });
+
     p.stderr.on('data', (data) => console.error(`[streamlink] ${data}`));
+  });
+}
+
+function compressWithFFmpeg(inputPath: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const p = spawn('ffmpeg', [
+      '-i',
+      inputPath,
+      '-c:v',
+      'libx264',
+      '-preset',
+      'veryfast',
+      '-b:v',
+      '1000k',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
+      outputPath,
+    ]);
+
+    p.on('close', (code) => {
+      if (code === 0) {
+        console.log(`포맷 완료! ${outputPath}`);
+        resolve();
+      } else {
+        reject(new Error(`ffmpeg exited with code ${code}`));
+      }
+    });
+
+    p.stderr.on('data', (data) => console.error(`[ffmpeg] ${data}`));
   });
 }
 

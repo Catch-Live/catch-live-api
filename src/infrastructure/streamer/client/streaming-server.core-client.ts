@@ -28,7 +28,7 @@ export class StreamingServerCoreClient implements StreamingServerClient {
             res
           ): res is PromiseFulfilledResult<
             AxiosResponse<YouTubeSearchResponse | ChzzkLiveStatusResponse>
-          > => res.status === 'fulfilled'
+          > => res.status === 'fulfilled' && res.value !== undefined && res.value.data !== undefined
         )
         .map((res) => this.parseLiveStatusResponse(res.value.data, streamers))
     );

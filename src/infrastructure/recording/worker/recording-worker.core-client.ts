@@ -19,26 +19,27 @@ import { StreamerWithChannelResult } from 'src/domain/streamer/result/streamer-w
 import { REDIS_KEY } from 'src/infrastructure/common/infra.constants';
 
 /**
- * RecordingWorkerCoreClient
  *
- * - 녹화 작업을 Redis 큐에 전송하고, 워커에서 처리 완료된 작업을 모니터링 서버가 수신 및 처리함
- * - 완료된 작업은 주기적으로 `JOB_DONE_QUEUE_KEY`에서 pull하여 DB 상태 업데이트 및 캐시 정리 수행
- * - 워커의 heartbeat TTL을 기반으로 워커 장애 감지 및 failover 처리를 수행
- * - 장애가 감지된 워커가 소유한 작업을 회수하여 재시도 큐(`JOB_FAIL_QUEUE`)에 등록
- * - 내부적으로 상태 추적용 Redis SET 및 HASH를 활용하며, 모든 상태 관리와 복구가 Redis 기반으로 동작함
+ * 역할 요약:
+ * - 녹화 작업을 Redis 리스트 큐에 전송하고, 워커가 처리 완료된 작업을 모니터링 서버가 주기적으로 감지하여 처리
+ * - 워커 장애 감지를 위해 TTL 기반 heartbeat 키 사용
+ * - 장애 감지 시, 해당 워커가 소유한 작업을 회수하고 재시도 큐에 등록 (failover)
+ * - 모든 상태 추적 및 장애 복구는 Redis 기반으로 동작
  *
- * 구현 기능:
- * - `sendRecordJob`: 녹화 작업 전송
- * - `pollDoneJobOnce`: 작업 완료 감지 및 처리
- * - `startFailoverDetection`: 워커 장애 감지 및 복구 처리
- * - `confirmFailover`: 장애 워커의 세션 회수 및 재시도 등록
+ * 주요 기능:
+ * - `sendRecordJob`: 녹화 작업 생성 및 대기 큐에 전송
+ * - `pollDoneJobOnce`: 완료 큐에서 작업 수신 및 DB 업데이트, 캐시 정리, 알림 전송
+ * - `startFailoverDetection`: 워커 생존 여부 감시 및 장애 복구
+ * - `confirmFailover`: 장애 워커의 미완료 작업 회수 및 재시도 등록
  *
  * 사용 Redis 키:
- * - JOB_DONE_QUEUE_KEY: 완료된 작업 큐
- * - JOB_META_KEY: 작업 메타데이터 (HASH)
- * - JOB_WAITING_QUEUE / JOB_FAIL_QUEUE: ZSET 기반의 작업 대기/재시도 큐
- * - HEARTBEAT_KEY: 워커 생존 확인용 heartbeat 키 (TTL 기반)
- * - RECORDING_SET_PREFIX: 각 워커가 수행 중인 세션 ID 리스트 (SET)
+ * - JOB_WAITING_QUEUE (List): 일반 작업 대기 큐
+ * - JOB_FAIL_QUEUE (List): 장애 복구용 재시도 큐
+ * - JOB_DONE_QUEUE_KEY (List): 워커가 처리 완료한 작업이 담기는 큐
+ * - JOB_META_KEY (Hash): 녹화 작업 메타데이터 저장 (liveSessionId → RecordPayload)
+ * - HEARTBEAT_KEY:<WORKER_ID> (String with TTL): 워커 생존 확인용 키 (5초마다 갱신, TTL 10초)
+ * - RECORDING_SET_PREFIX:<WORKER_ID> (Set): 워커가 현재 수행 중인 liveSessionId 목록
+ *
  */
 @Injectable()
 export class RecordingWorkerCoreClient
@@ -108,8 +109,7 @@ export class RecordingWorkerCoreClient
       subscriptions,
     };
 
-    const score = Date.now();
-    await this.cacheService.zadd(this.JOB_WAITING_QUEUE, score, JSON.stringify(payload));
+    await this.recordingQueueClient.pushJob(this.JOB_WAITING_QUEUE, payload);
     this.logger.log(`녹화 작업 전송 완료 - 세션 ${liveSessionId}`);
   }
 
@@ -274,7 +274,7 @@ export class RecordingWorkerCoreClient
 
       if ((job.retryCount ?? 0) < 1) {
         job.retryCount = 1;
-        await this.cacheService.zadd(this.JOB_FAIL_QUEUE, Date.now(), JSON.stringify(job));
+        await this.recordingQueueClient.pushJob(this.JOB_FAIL_QUEUE, job);
       }
 
       await this.cacheService.removeHashField(this.JOB_META_KEY, sessionId);
