@@ -1,0 +1,215 @@
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { Provider, UserEntity } from 'src/domain/user/user.entity';
+import { UserRepository } from 'src/domain/user/user.repository';
+import { PrismaService } from '../prisma/prisma.service';
+import { TokenEntity } from 'src/domain/user/token.entity';
+import { LogoutRequestCommand } from 'src/domain/auth/command/logout.command';
+import { SignupCommand } from 'src/domain/auth/command/signup.command';
+import { DomainCustomException } from 'src/domain/common/errors/domain-custom-exception';
+import { DomainErrorCode } from 'src/domain/common/errors/domain-error-code';
+import { UserRequestCommand } from 'src/domain/user/user.command';
+import { PrismaTxContext } from '../prisma/transactional-context';
+
+@Injectable()
+export class UserCoreRepository implements UserRepository {
+  constructor(private readonly prismaService: PrismaService) {}
+
+  async findByProviderAndEmail(provider: Provider, email: string): Promise<UserEntity | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { provider_email: { provider, email } },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return new UserEntity(
+      Number(user.user_id),
+      user.nickname ?? '',
+      user.email ?? '',
+      user.provider ?? 'KAKAO',
+      user.is_deleted ?? false,
+      user.created_at ?? null,
+      user.updated_at ?? null
+    );
+  }
+
+  async findTokenById(userId: number): Promise<TokenEntity | null> {
+    const token = await this.prisma.token.findUnique({
+      where: {
+        user_id: userId,
+      },
+    });
+
+    if (!token) {
+      return null;
+    }
+
+    return new TokenEntity(
+      Number(token.token_id),
+      Number(token.user_id),
+      token.refresh_token,
+      token.created_at,
+      token.updated_at
+    );
+  }
+
+  async updateRefreshToken(userId: number, newRefreshToken: string): Promise<TokenEntity> {
+    const token = await this.prisma.token.update({
+      where: { user_id: userId },
+      data: { refresh_token: newRefreshToken },
+    });
+
+    return new TokenEntity(
+      Number(token.token_id),
+      Number(token.user_id),
+      token.refresh_token,
+      token.created_at,
+      token.updated_at
+    );
+  }
+
+  async createUser(command: SignupCommand): Promise<number> {
+    const { provider, email, nickname } = command;
+
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          provider,
+          email,
+          nickname,
+        },
+      });
+
+      return Number(newUser.user_id);
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
+  }
+
+  async upsertToken(userId: number): Promise<void> {
+    try {
+      await this.prisma.token.upsert({
+        where: { user_id: userId },
+        update: { refresh_token: '' },
+        create: {
+          user_id: userId,
+          refresh_token: '',
+        },
+      });
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
+  }
+
+  async findByNickname(nickname: string): Promise<UserEntity | null> {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { nickname },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      return new UserEntity(
+        Number(user.user_id),
+        user.nickname ?? '',
+        user.email ?? '',
+        user.provider ?? 'KAKAO',
+        user.is_deleted ?? false,
+        user.created_at ?? null,
+        user.updated_at ?? null
+      );
+    } catch {
+      throw new DomainCustomException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        DomainErrorCode.DB_SERVER_ERROR
+      );
+    }
+  }
+
+  async signout(requestDto: UserRequestCommand) {
+    await this.prisma.$transaction(async (prisma) => {
+      const signoutUser = await prisma.user.update({
+        where: {
+          user_id: requestDto.userId,
+          is_deleted: false,
+        },
+        data: { is_deleted: true, nickname: '' },
+      });
+      if (!signoutUser) {
+        throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+      }
+
+      const signoutToken = await this.prisma.token.update({
+        where: {
+          user_id: requestDto.userId,
+        },
+        data: { refresh_token: '' },
+      });
+      if (!signoutToken) {
+        throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+      }
+    });
+
+    return true;
+  }
+
+  async logout(requestCommand: LogoutRequestCommand) {
+    try {
+      const entity = await this.prisma.$transaction(async (prisma) => {
+        const queryData = await prisma.token.update({
+          where: {
+            user_id: requestCommand.userId,
+          },
+          data: { refresh_token: '', updated_at: new Date() },
+        });
+
+        if (!queryData) {
+          throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+        }
+
+        return new UserEntity(
+          requestCommand.userId,
+          '',
+          '',
+          Provider.GOOGLE,
+          true,
+          new Date(),
+          new Date()
+        );
+      });
+
+      return entity;
+    } catch {
+      throw new DomainCustomException(500, DomainErrorCode.DB_SERVER_ERROR);
+    }
+  }
+
+  async restoreUser(userId: number, command: SignupCommand): Promise<void> {
+    const { email, nickname, provider } = command;
+
+    await this.prisma.user.update({
+      where: {
+        provider_email: { email, provider },
+      },
+      data: {
+        email,
+        nickname,
+        provider,
+        is_deleted: false,
+      },
+    });
+  }
+
+  private get prisma() {
+    return PrismaTxContext.get() ?? this.prismaService;
+  }
+}

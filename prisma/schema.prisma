@@ -1,0 +1,165 @@
+generator client {
+  provider                 = "prisma-client-js"
+  previewFeatures          = ["views"]
+  mapUnderscoreToCamelCase = "true"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  user_id       BigInt         @id @default(autoincrement())
+  nickname      String?
+  email         String?
+  provider      Provider?
+  is_deleted    Boolean?       @default(false)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  subscriptions Subscription[]
+  tokens        Token[]
+  notifications Notification[]
+
+  @@unique([provider, email])
+  @@map("user")
+}
+
+model Streamer {
+  streamer_id   BigInt         @id @default(autoincrement())
+  platform      Platform
+  channel_id    String         @unique
+  channel_name  String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  is_live       Boolean?       @default(false)
+  video_id      String         @default("")
+  subscriptions Subscription[]
+  live_sessions LiveSession[]
+
+  @@map("streamer")
+}
+
+model Subscription {
+  subscription_id BigInt   @id @default(autoincrement())
+  user_id         BigInt
+  streamer_id     BigInt
+  is_connected    Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  user            User     @relation(fields: [user_id], references: [user_id])
+  streamer        Streamer @relation(fields: [streamer_id], references: [streamer_id])
+
+  @@index([streamer_id])
+  @@map("subscription")
+}
+
+model Token {
+  token_id      BigInt   @id @default(autoincrement())
+  user_id       BigInt   @unique
+  refresh_token String   @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          User     @relation(fields: [user_id], references: [user_id])
+
+  @@map("token")
+}
+
+model LiveSession {
+  live_session_id BigInt      @id @default(autoincrement())
+  streamer_id     BigInt
+  channel_name    String?
+  title           String
+  started_at      DateTime    @default(now())
+  ended_at        DateTime?
+  status          LiveStatus? @default(LIVE)
+  channel_id      String?
+  platform        Platform?   @default(CHZZK)
+  streamer        Streamer    @relation(fields: [streamer_id], references: [streamer_id])
+  recordings      Recording[]
+
+  @@index([title])
+  @@index([started_at])
+  @@map("live_session")
+}
+
+model Recording {
+  recording_id    BigInt           @id @default(autoincrement())
+  live_session_id BigInt
+  video_url       String?          @db.Text
+  started_at      DateTime         @default(now())
+  completed_at    DateTime?
+  status          RecordingStatus? @default(RECORDING)
+  live_session    LiveSession      @relation(fields: [live_session_id], references: [live_session_id])
+
+  @@index([live_session_id])
+  @@map("recording")
+}
+
+model Notification {
+  notification_id BigInt   @id @default(autoincrement())
+  user_id         BigInt
+  content         String
+  created_at      DateTime @default(now())
+  user            User     @relation(fields: [user_id], references: [user_id])
+
+  @@map("notification")
+}
+
+view vSubscribedSessions {
+  recording_id     BigInt                                  @unique @default(0)
+  live_session_id  BigInt
+  title            String
+  platform         v_subscribed_sessions_platform?         @default(CHZZK)
+  channel_id       String?
+  channel_name     String?
+  live_status      v_subscribed_sessions_live_status?      @default(LIVE)
+  video_url        String?                                 @db.Text
+  started_at       DateTime                                @default(now())
+  completed_at     DateTime?
+  recording_status v_subscribed_sessions_recording_status? @default(RECORDING)
+  user_id          BigInt
+
+  @@map("v_subscribed_sessions")
+}
+
+enum Provider {
+  NAVER
+  KAKAO
+  GOOGLE
+}
+
+enum Platform {
+  CHZZK
+  YOUTUBE
+}
+
+enum LiveStatus {
+  LIVE
+  COMPLETED
+  FAILED
+}
+
+enum RecordingStatus {
+  RECORDING
+  COMPLETED
+  FAILED
+}
+
+enum v_subscribed_sessions_platform {
+  CHZZK
+  YOUTUBE
+}
+
+enum v_subscribed_sessions_live_status {
+  LIVE
+  COMPLETED
+  FAILED
+}
+
+enum v_subscribed_sessions_recording_status {
+  RECORDING
+  COMPLETED
+  FAILED
+}

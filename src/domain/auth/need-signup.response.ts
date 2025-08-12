@@ -1,0 +1,18 @@
+import { LoginToken } from './login-token';
+
+export interface SignoutResponseResult {
+  is_updated: boolean;
+}
+
+export interface NeedSignupResponse {
+  needSignup: true;
+  user: {
+    email: string;
+  };
+}
+
+export function isNeedSignupResponse(
+  result: LoginToken | NeedSignupResponse
+): result is NeedSignupResponse {
+  return (result as NeedSignupResponse).needSignup === true;
+}
